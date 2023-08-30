@@ -19,12 +19,11 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         
         self.setupUi(self)
         self.addBtn.clicked.connect(self.add_event)
-        self.whatBtn.clicked.connect(self.sendRefreshEvt)
         
-        wst = websocketThread()
-        wst.start() #메인 스레드에서 생성 X
+        wst = websocketThread(self.refresh)
+        wst.start() 
         
-        self.renderPostsCount()
+        self.refresh()
         
         
             
@@ -37,12 +36,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
     # 게시물 카운트 조회
     def getPostsCount(self):
-        response = requests.get(Urls.postsCountUrl)
-        if response.status_code == 200 :
-            return response.json()
-        else:
-            #TODO 경고모달
-            print('no connection')
+        return self.returnResponse(Urls.postsCountUrl)
     
     #TODO  게시물 카운트 렌더링
     def renderPostsCount(self):
@@ -53,23 +47,36 @@ class MainWindow(QMainWindow,Ui_MainWindow):
     
     # 게시물 조회
     def getPosts(self):
-        response = requests.get(Urls.getPostsUrl)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            #Todo 경고모달
-            print('no connection')
-            
+        return self.returnResponse(Urls.getPostsUrl)
+    
+    #TODO 게시물 렌더링        
+    def renderPosts(self):
+        data = self.getPosts()
+    
     def getMemos(self):
-        response = requests.get(Urls.getMemosUrl)
+        return self.returnResponse(Urls.getMemosUrl)
+            
+    #TODO 메모 렌더링
+    def renderMemos(self):
+        data = self.getMemos()
+        print(data)
+        return 
+            
+    def refresh(self):
+        print('refreshed!')
+        self.renderPostsCount()
+        self.renderPosts()
+        self.renderMemos()
+        #TODO 어떻게 게시물-메모 렌더링 할것인지?
+    
+    def returnResponse(slef,url):
+        response = requests.get(url)
         if response.status_code == 200:
             return response.json()
         else:
             #Todo 경고모달
             print('no connection')
-        
-    def sendRefreshEvt(self):
-        response = requests.get(Urls.sendEventUrl)
+            return 'error'
         
 #게시물 추가 팝업
 class AddModalDialog(QDialog, Ui_AddModal):
@@ -127,11 +134,14 @@ class AddMemoModalDialog(QDialog, Ui_MemoModal):
 
 class websocketThread(QThread):
       #웹소켓 연결
-    def __init__(self):
+    def __init__(self,refreshCallback):
         super().__init__()
+        self.refreshCallback = refreshCallback
         self.daemon = True #프로그램 종료시 스레드 자동 종료
                 
     def on_message(self,ws, msg):
+        if msg != "connected":
+            self.refreshCallback()
         print(msg)
 
     def on_error(self,ws, error):
@@ -139,20 +149,20 @@ class websocketThread(QThread):
         #TODO 에러 모달 추가예정
 
     def on_close(self,ws, close_status_code, close_msg):
-        print("Closed")
+        print("종료")
 
     def on_open(self,ws):
-        print("Opened connection")
+        print("웹소켓 연결됨")
         
     def run(self):
         websocket.enableTrace(True)
         self.ws = websocket.WebSocketApp(Urls.wsConnectUrl,
-            on_message=lambda ws, msg: self.on_message(ws, msg),
+            on_message=self.on_message,
             on_error=lambda ws, error: self.on_error(ws,error),
             on_close=lambda ws, close_status_code, close_msg: self.on_close(ws,close_status_code, close_msg),
             on_open =lambda ws: self.on_open(ws))
         
-        self.ws.run_forever(reconnect=5)  # 끊기면 5초마다 서버 재접속 
+        self.ws.run_forever(reconnect=5)  # 연결 종료시 5초마다 서버 재접속 
 
         
         

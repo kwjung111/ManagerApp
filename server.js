@@ -21,12 +21,18 @@ wss.on('connection', (ws,request) => {
         console.log(`Received message: ${message}`);
     });
 
-    setTimeout(()=>{
-        ws.send('event!!')
-    },5000)
-    ws.send('Hello from server!');
+    ws.send('connected');
 });
 
+//모든 클라이언트에게 메세지 전송
+wss.broadcast = (msg) => {
+    wss.clients.forEach((client) => {
+        client.send(msg);
+    });
+}
+
+
+//TODO 쿼리, db커넥션 promise 기반으로 교체
 app.post("/add",(req,res)=>{
     if(req.body){
         const data = req.body
@@ -40,6 +46,7 @@ app.post("/add",(req,res)=>{
     else{
         res.sendStatus(400)
     }
+    wss.broadcast('add')
 })
 
 app.post("/remove",(req,res)=>{
@@ -49,32 +56,36 @@ app.post("/remove",(req,res)=>{
     else{
         res.sendStatus(400)
     }
+    wss.broadcast('remove')
 })
 
 app.get("/postsCount",(req,res)=>{
     const postsCountQuery = query.getPostsCount()
-    dbconn.query(postsCountQuery,(error,results,fields) =>{
+    data = dbconn.query(postsCountQuery,(error,results,fields) =>{
         console.log(JSON.stringify(results))
         res.json(results[0])
     })
     console.log(postsCountQuery)
-   
-    
 })
 
+app.get('/posts',(req,res)=>{
+    const postQuery = query.getPosts()
+    dbconn.query(postQuery,(error,results,fields) =>{
+        console.log(JSON.stringify(results))
+        res.json(results)
+    })
+    console.log(postQuery)
+})
 
-app.get('/sendRefreshEvt', (req, res) => {
-    // 모든 클라이언트에게 메시지 
-    console.log('aa')
-    wss.clients.forEach(client => {
-        console.log(client)
-        if (client.readyState === WebSocket.OPEN) {
-            console.log(client)
-            client.send('Hello, World!');
-        }
-    });
-    res.send('Event sent to all clients.');
-});
+app.get('/memos',(req,res)=>{
+    const memoQuery = query.getMemos()
+    dbconn.query(memoQuery,(error,results,fields) =>{
+        console.log(JSON.stringify(results))
+        res.json(results)
+    })
+    console.log(memoQuery)
+})
+
 
 server.listen(port, ()=>{
     console.log(`server is listening at localhost:${port}`);

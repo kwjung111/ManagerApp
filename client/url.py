@@ -9,7 +9,6 @@ class Urls():
     getPostsUrl = httpUrl + '/posts'
     getMemosUrl = httpUrl + '/memos'
     postsCountUrl = httpUrl + '/postsCount'  
-    sendEventUrl = httpUrl + '/sendRefreshEvt'
     
     def __init__(self):
         return

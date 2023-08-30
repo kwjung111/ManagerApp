@@ -1,6 +1,5 @@
 const mysql = require('mysql2');
 
-
 const dbConnection = mysql.createConnection({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -18,6 +17,4 @@ dbConnection.connect(error => {
   console.log('Connected to the database');
 });
 
-module.exports = {
-   dbConnection
-};
+module.exports = dbConnection

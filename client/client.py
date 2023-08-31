@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import *
 import threading 
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, Signal, QTimer, QDateTime
 from layout import Ui_MainWindow
 from addModal import Ui_AddModal
 from memoModal import Ui_MemoModal
@@ -20,20 +20,28 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.setupUi(self)
         self.addBtn.clicked.connect(self.add_event)
         
-        wst = websocketThread(self.refresh)
-        wst.start() 
+        wst = websocketThread()
+        wst.signal.connect(self.showTime)
+        wst.start()
+        
+        timer = QTimer(self) 
+        timer.timeout.connect(self.showTime)
+        timer.start(100)
+    
         
         self.refresh()
         
-        
-            
+    def showTime(self):
+        curTime = QDateTime.currentDateTime()
+        strTime = curTime.toString("yyyy.MM.dd hh:mm:ss")
+        self.dateTime.setText(strTime)
+    
+                    
     # 게시물 추가 팝업 생성
     def add_event(self):
         dialog = AddModalDialog()
-        dialog.exec_()
+        dialog.exec()
     
-   
-
     # 게시물 카운트 조회
     def getPostsCount(self):
         return self.returnResponse(Urls.postsCountUrl)
@@ -41,9 +49,9 @@ class MainWindow(QMainWindow,Ui_MainWindow):
     #TODO  게시물 카운트 렌더링
     def renderPostsCount(self):
         data = self.getPostsCount()
-        print(data['recentPost'])
-        print(data['acting'])
-        print(data['emergency'])
+        self.recentWeek.setText("최근 1주일 접수 : " + str(data[0]['recentPost']))
+        self.onProg.setText("처리 중 : " + str(data[0]['acting']))
+        self.onProgAlert.setText("긴급 처리 중  : " + str(data[0]['emergency']))
     
     # 게시물 조회
     def getPosts(self):
@@ -72,7 +80,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
     def returnResponse(slef,url):
         response = requests.get(url)
         if response.status_code == 200:
-            return response.json()
+            jsonData = response.json()
+            return jsonData['result']
         else:
             #Todo 경고모달
             print('no connection')
@@ -85,25 +94,30 @@ class AddModalDialog(QDialog, Ui_AddModal):
         self.setupUi(self)
         self.addBtn.clicked.connect(self.addBtn_event)
         self.clsBtn.clicked.connect(self.close)
+        self.radioButton.setChecked(True)
         
     def addBtn_event(self):
+        postCd = 1
         if(self.ctntsTxt.text() == ""):
             QMessageBox.warning(self,'체크해 주세요','내용을 입력해주세요')
             return
         if(self.wrtrTxt.text() == ""):
             QMessageBox.warning(self,'체크해 주세요','작성자를 입력해주세요')
             return
+        if self.radioButton.isChecked():
+            postCd = 1
+        else:
+            postCd = 2
         
         addData = {
+            'postCd' : postCd,
             'content' : self.ctntsTxt.text(),
             'writer' : self.wrtrTxt.text(),
         }
         
         response = requests.post( Urls.addUrl , json=addData)
-        
-        if response.status_code==200 :
-            print(response.text)
-            self.close()
+
+        self.close()
         
 #메모 추가 팝업
 class AddMemoModalDialog(QDialog, Ui_MemoModal):
@@ -122,6 +136,7 @@ class AddMemoModalDialog(QDialog, Ui_MemoModal):
             return
         
         addData = {
+                    
             'content' : self.ctntsTxt.text(),
             'writer' : self.wrtrTxt.text(),
         }
@@ -133,15 +148,15 @@ class AddMemoModalDialog(QDialog, Ui_MemoModal):
             self.close()
 
 class websocketThread(QThread):
+    signal = Signal(str)
       #웹소켓 연결
-    def __init__(self,refreshCallback):
+    def __init__(self):
         super().__init__()
-        self.refreshCallback = refreshCallback
         self.daemon = True #프로그램 종료시 스레드 자동 종료
                 
     def on_message(self,ws, msg):
         if msg != "connected":
-            self.refreshCallback()
+            self.signal.emit("refresh")
         print(msg)
 
     def on_error(self,ws, error):

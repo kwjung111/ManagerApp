@@ -21,15 +21,16 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.addBtn.clicked.connect(self.add_event)
         
         wst = websocketThread()
-        wst.signal.connect(self.showTime)
+        wst.signal.connect(self.refresh)
         wst.start()
+        
+        self.refresh()
         
         timer = QTimer(self) 
         timer.timeout.connect(self.showTime)
         timer.start(100)
     
         
-        self.refresh()
         
     def showTime(self):
         curTime = QDateTime.currentDateTime()

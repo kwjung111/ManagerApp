@@ -5,6 +5,7 @@ const http = require('http')
 const WebSocket = require('ws');
 const dbcPool = require('./dbconn.js')
 const query = require('./query.js')
+const util = require('./util.js')
 
 const app = express();
 const server = http.createServer(app);
@@ -94,6 +95,30 @@ app.get('/memos',(req,res)=>{
     })
 })
 
+
+//TODO 리팩토링
+app.get('/postTree',async (req,res) =>{
+
+    let rt = {
+        ok : false,
+        msg : '',
+        result : null
+    }
+
+    Promise.all([
+        transaction(req,query.getPosts),
+        transaction(req,query.getMemos)
+    ]).then((results) => {
+        let posts = results[0].result
+        let memos = results[1].result
+        
+        rt.ok = true
+        rt.msg = 200
+        rt.result = util.makeTree(posts,memos)
+        res.send(rt)
+    })
+})
+
 app.post('/changePrgState',(req,res)=>{
     transaction(req,query.changePrgState)
     .then( (ret)=> {
@@ -104,7 +129,6 @@ app.post('/changePrgState',(req,res)=>{
         }).event())
     })
 })
-
 
 
 server.listen(port, ()=>{

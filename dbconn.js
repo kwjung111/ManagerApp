@@ -3,11 +3,11 @@ const mysql = require('mysql2/promise');
 
 
 const dbcPool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_DB,
+  host: '15.164.4.54',
+  port: '33061',
+  user: 'root',
+  password: '1234',
+  database: 'Dev',
 });
 
 

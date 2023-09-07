@@ -76,6 +76,17 @@ app.post("/remove",async (req,res)=>{
     })
 })
 
+app.post("/removeMemo", async (req,res)=>{
+    transaction(req,query.removeMemoQuery)
+    .then( (ret)=> {
+        res.send(ret)
+        console.log(ret)
+        wss.broadcast(new wsJson({
+            event:"removeMemo"
+        }).event())
+    })
+})
+
 app.get("/postsCount",(req,res)=>{
     transaction(req,query.getPostsCount)
     .then( (ret)=> {

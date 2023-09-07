@@ -42,6 +42,13 @@ const query = {
             AND BRD_SEQ = '${data.postSeq}'`
     },
 
+    removeMemoQuery : function(data){
+        return `UPDATE MEMO 
+        SET MEMO_USE_TF = FALSE
+        WHERE 1=1
+            AND MEMO_SEQ ='${data.memoSeq}'`
+    },
+
     //게시물 개수 조회
     getPostsCount : function(){
        return `SELECT COUNT(CASE WHEN 1=1 
@@ -98,11 +105,11 @@ INNER JOIN BRD brd
  AND brd.BRD_SEQ  = memo.BRD_SEQ 
  -- AND brd.BRD_PRGSS_TF = TRUE /* 항상 보이게 변경 */ 
  AND brd.BRD_USE_TF = TRUE
+ AND brd.BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
  
 WHERE 1=1 
  AND memo.MEMO_USE_TF  = TRUE`
-
-},
+ },
 
 changePrgState : function(data) {
     return`

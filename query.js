@@ -79,7 +79,9 @@ const query = {
     FROM BRD
 
     WHERE 1=1 
-	    AND BRD_USE_TF = TRUE;`
+	    AND BRD_USE_TF = TRUE
+        AND BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
+	ORDER BY BRD_SEQ DESC;`
     },
     
 getMemos : function(){
@@ -94,8 +96,9 @@ FROM MEMO memo
 INNER JOIN BRD brd 
  ON 1=1
  AND brd.BRD_SEQ  = memo.BRD_SEQ 
- AND brd.BRD_PRGSS_TF = TRUE 
+ -- AND brd.BRD_PRGSS_TF = TRUE /* 항상 보이게 변경 */ 
  AND brd.BRD_USE_TF = TRUE
+ 
 WHERE 1=1 
  AND memo.MEMO_USE_TF  = TRUE`
 

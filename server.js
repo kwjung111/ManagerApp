@@ -7,15 +7,20 @@ const dbcPool = require('./dbconn.js')
 const query = require('./query.js')
 const util = require('./util.js')
 
+const path=require('path')
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const port = process.env.PORT || 3000;
 
 
-
-app.use(express.json())
 app.use(cors())
+app.use(express.json())
+app.use(express.static(path.resolve(__dirname, 'dist')));
+
+app.use('/srList', express.static(path.join(__dirname, 'dist')));
+
+
 
 wss.on('connection', (ws,request) => {
     console.log('Client connected');

@@ -1,3 +1,5 @@
+const dbc = require('./dbconn.js')
+
 const query = {
     // 게시물 등록
     addPostQuery : function(data){
@@ -11,10 +13,10 @@ const query = {
         BRD_REG_DTM
         )VALUES(
         TRUE,
-        '${data.content}',
+        ${dbc.escape(data.content)},
         TRUE,
-        '${data.writer}',
-        '${data.postCd}',
+        ${dbc.escape(data.writer)},
+        ${dbc.escape(data.postCd)},
         NOW(),
         NOW()
     )`},
@@ -27,9 +29,9 @@ const query = {
             MEMO_REG_DTM,
             MEMO_USE_TF 
             )VALUES(
-            '${data.postSeq}',
-            '${data.content}',
-            '${data.writer}',
+            ${dbc.escape(data.postSeq)},
+            ${dbc.escape(data.content)},
+            ${dbc.escape(data.writer)},
             NOW(),
             TRUE)`
     },
@@ -39,14 +41,14 @@ const query = {
         return `UPDATE BRD 
         SET BRD_USE_TF = FALSE
         WHERE 1=1
-            AND BRD_SEQ = '${data.postSeq}'`
+            AND BRD_SEQ = ${dbc.escape(data.postSeq)}`
     },
 
     removeMemoQuery : function(data){
         return `UPDATE MEMO 
         SET MEMO_USE_TF = FALSE
         WHERE 1=1
-            AND MEMO_SEQ ='${data.memoSeq}'`
+            AND MEMO_SEQ =${dbc.escape(data.memoSeq)}`
     },
 
     //게시물 개수 조회
@@ -131,8 +133,7 @@ SET BRD_ACT_TOT_TIME = CASE
 		WHEN BRD_PRGSS_TF = TRUE THEN FALSE 
 		WHEN BRD_PRGSS_TF = FALSE THEN TRUE
 	END
-WHERE BRD_SEQ = ${data.postSeq};
-`
+WHERE BRD_SEQ = ${dbc.escape(data.postSeq)};`
 }
 
 }

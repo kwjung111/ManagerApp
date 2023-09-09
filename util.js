@@ -1,3 +1,7 @@
+const query = require('./query.js')
+const dbcPool = require('./dbconn.js')
+const {wss} = require('./wss.js')
+
 const util = {
   makeTree: (posts, memos) => {
     if(!posts.length) return null
@@ -33,7 +37,38 @@ const util = {
         return req.params
       }
 
-    }
+    },
+
+    transaction : async (req,query) => {
+      let rt = {
+          ok : false,
+          msg : '',
+          result : null
+      }
+      let data = util.parseReqBody(req)
+      let conn = null
+  
+      try{
+          conn = await dbcPool.getConnection()
+          await conn.beginTransaction()
+          const [result] = await conn.query(query(data))
+          rt.ok = true
+          rt.msg = '200',
+          rt.result = result;
+          await conn.commit(); 
+          conn.release()
+      }
+      catch(err){
+          console.error(err);
+          rt.msg = '400'
+          rt.result = err.message
+          if(conn){
+              await conn.rollback()
+              conn.release()
+          }
+      }
+      return rt
+  },
 };
 
 module.exports = util;

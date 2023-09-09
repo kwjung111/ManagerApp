@@ -1,6 +1,5 @@
 const util = {
   makeTree: (posts, memos) => {
-    console.log(memos)
     if(!posts.length) return null
     if(!memos.length) return posts 
     return posts.reduce((acc, cur) => {
@@ -23,6 +22,18 @@ const util = {
     }
     return copy;
     },
+
+    //data의 Body, 경로 변수를 Object 형태로 반환
+    parseReqBody : (req) => {
+      let data = {}
+      if(req.method == 'POST'){
+        return req.body
+      }
+      else if(req.method == 'DELETE'){
+        return req.params
+      }
+
+    }
 };
 
 module.exports = util;

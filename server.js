@@ -43,7 +43,7 @@ wss.broadcast = (msg) => {
 }
 
 
-app.post("/add",(req,res)=>{
+app.post("/posts",(req,res)=>{
     transaction(req,query.addPostQuery)
     .then( (ret)=> {
         res.send(ret)
@@ -54,7 +54,7 @@ app.post("/add",(req,res)=>{
     })
 })
 
-app.post("/addMemo",(req,res)=>{
+app.post("/memos",(req,res)=>{
     transaction(req,query.addMemoQuery)
     .then( (ret)=> {
         res.send(ret)
@@ -65,7 +65,7 @@ app.post("/addMemo",(req,res)=>{
     })
 })
 
-app.post("/remove",async (req,res)=>{
+app.delete("/posts/:postSeq",async (req,res)=>{
     transaction(req,query.removePostQuery)
     .then( (ret)=> {
         res.send(ret)
@@ -74,9 +74,10 @@ app.post("/remove",async (req,res)=>{
             event:"removePost"
         }).event())
     })
+
 })
 
-app.post("/removeMemo", async (req,res)=>{
+app.delete("/memos/:seq", async (req,res)=>{
     transaction(req,query.removeMemoQuery)
     .then( (ret)=> {
         res.send(ret)
@@ -159,7 +160,7 @@ async function transaction(req,query){
         msg : '',
         result : null
     }
-    let data = req.body
+    let data = util.parseReqBody(req)
     let conn = null
 
     try{

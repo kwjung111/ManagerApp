@@ -22,7 +22,7 @@ router
         }).event())
     })
 })
-.delete("/:seq", async (req,res)=>{
+.delete("/:memoSeq", async (req,res)=>{
     util.transaction(req,query.removeMemoQuery)
     .then( (ret)=> {
         res.send(ret)

@@ -26,7 +26,7 @@ class wsJson{
         }
         this.json.type = type
     }
-    event(method,resource,rid,uid,content){
+    event(method,resource,rid,uid,content,meta=null){
         if(this.json.type !== "event"){
             throw new Error('이벤트 타입이 아님')
         }
@@ -35,7 +35,8 @@ class wsJson{
             resource:resource,
             rid:rid,        //자원 id
             UID:uid,        //유저 id
-            content:content
+            content:content,
+            meta:meta
         }
         return JSON.stringify(this.json)
     }

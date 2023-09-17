@@ -15,10 +15,11 @@ router
 .post("/",(req,res)=>{
     util.transaction(req,query.addMemoQuery)
     .then( (ret)=> {
+        ret.result.postSeq = req.body.postSeq
         res.send(ret)
-        console.log(ret)
         if(ret.ok == true){
-            broadcast(new wsJson("event").event("POST","memos",req.body.memoSeq,req.body.UID,req.body.content))
+            broadcast(new wsJson("event")
+            .event("POST","memos",req.body.memoSeq,req.body.UID,req.body.content,{postSeq:req.body.postSeq}))
         }
     })
 })
@@ -26,8 +27,8 @@ router
     util.transaction(req,query.removeMemoQuery)
     .then( (ret)=> {
         res.send(ret)
-        console.log(ret)
-        broadcast(new wsJson("event").event("DELETE","memos",req.body.memoSeq,null,null))
+        broadcast(new wsJson("event")
+        .event("DELETE","memos",req.body.memoSeq,null,null))
     })
 })
 

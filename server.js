@@ -25,6 +25,7 @@ app.use(cors())
 app.use(express.json()) 
 
 //TODO 세션 작성
+/*
 app.use(session({
     secret:'kwjung',
     resave:false,
@@ -34,6 +35,7 @@ app.use(session({
         maxAge : 600000,     //10분   
     }
 }))
+*/
 
 
 //서버,웹소켓 초기화

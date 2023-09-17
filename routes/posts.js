@@ -1,7 +1,7 @@
 const express = require("express")
 const router = express.Router();
 const util = require("../util.js")
-const query = require("../query.js")
+const query = require("../queries/query.js")
 const {wsJson,broadcast} = require('../wss.js')
 
 
@@ -10,37 +10,35 @@ router
     util.transaction(req,query.getPosts)
     .then( (ret)=> {
         res.send(ret)
-        console.log(ret)
     })
 })
 .post("/",(req,res)=>{
     util.transaction(req,query.addPostQuery)
     .then( (ret)=> {
         res.send(ret)
-        console.log(ret)
-        broadcast(new wsJson({
-            event:"addPost"
-        }).event())
+        if(ret.ok == true){
+            broadcast(new wsJson("event").event("POST","posts",req.body.postSeq,req.body.UID,req.body.content))
+        }
     })
 })
-.patch('/prgState',(req,res)=>{
+.patch("/prgState",(req,res)=>{
+    console.log(req.body)
     util.transaction(req,query.changePrgState)
     .then( (ret)=> {
         res.send(ret)
-        console.log(ret)
-        broadcast(new wsJson({
-            event:"prgState"
-        }).event())
+        if(ret.ok == true){
+            broadcast(new wsJson("event").event("PATCH","posts",req.body.postSeq,req.body.UID))
+        }
     })
 })
 .delete("/:postSeq",async (req,res)=>{
+    const { postSeq, UID } = req.params;
     util.transaction(req,query.removePostQuery)
     .then( (ret)=> {
         res.send(ret)
-        console.log(ret)
-        broadcast(new wsJson({
-            event:"removePost"
-        }).event())
+        if(ret.ok == true){
+            broadcast(new wsJson("event").event("DELETE","posts",req.params.postSeq,null,null))
+        }
     })
 
 })

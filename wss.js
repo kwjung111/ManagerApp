@@ -12,31 +12,42 @@ initWss = (server) =>{
             console.log(`Received message: ${message}`);
         });
     
-        ws.send(new wsJson({
-                content: `you are connected to server`,
-                clients : wss.clients.size,
-            }).message())
+        ws.send(new wsJson('message').message('you are connected to Server'))
     });
 }
 
 //웹소켓 json 메세지 파싱
 class wsJson{
-    #json={
-        type:null,
-        data:null,
+    
+    constructor(type){
+        this.json ={
+            type:null,
+            data:null,
+        }
+        this.json.type = type
     }
-    constructor(data){
-        this.#json.data = data
+    event(method,resource,rid,uid,content){
+        if(this.json.type !== "event"){
+            throw new Error('이벤트 타입이 아님')
+        }
+        this.json.data = {
+            method:method,
+            resource:resource,
+            rid:rid,        //자원 id
+            UID:uid,        //유저 id
+            content:content
+        }
+        return JSON.stringify(this.json)
     }
-    event(){
-        this.#json.type = "event"
-        return JSON.stringify(this.#json)
-    }
-    message(data){
-        this.#json.type = "message"
-        return JSON.stringify(this.#json)
+    message(msg){
+        if(this.json.type !== "message"){
+            throw new Error('메세지 타입이 아님')
+        }
+        this.json.data = msg
+        return JSON.stringify(this.json)
     }
 }
+
 
 //전체 메세지 전달
 broadcast = (msg) => {

@@ -49,7 +49,6 @@ const util = {
     };
     let data = util.parseReqBody(req);
     let conn = null;
-
     try {
       conn = await dbcPool.getConnection();
       await conn.beginTransaction();

@@ -4,6 +4,7 @@ const query = {
     // 게시물 등록
     addPostQuery : function(data){
     return `INSERT INTO BRD (
+        BRD_NO,
         BRD_PRGSS_TF,
         BRD_CTNTS,
         BRD_USE_TF,
@@ -12,6 +13,11 @@ const query = {
         BRD_ACT_STRT_DTM,
         BRD_REG_DTM
         )VALUES(
+        (SELECT COUNT(0) + 1 FROM
+        BRD brd
+        WHERE 	
+        brd.BRD_REG_DTM >= DATE_FORMAT(CURRENT_DATE(), '%Y-%m-01')
+        ),
         TRUE,
         ${dbc.escape(data.content)},
         TRUE,
@@ -72,6 +78,7 @@ const query = {
     getPosts : function(){
         return `
     SELECT 
+        CONCAT(DATE_FORMAT(BRD_REG_DTM, '%m'),"-",BRD_NO),
 	    BRD_SEQ,
 	    BRD_PRGSS_TF,
 	    BRD_CTNTS,

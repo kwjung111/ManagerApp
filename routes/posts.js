@@ -2,6 +2,7 @@ const express = require("express")
 const router = express.Router();
 const util = require("../util.js")
 const query = require("../queries/query.js")
+const postQuery = require("../queries/postQuery.js")
 const {wsJson,broadcast} = require('../wss.js')
 
 
@@ -9,6 +10,13 @@ router
 .get("/",(req,res)=>{
     util.transaction(req,query.getPosts)
     .then( (ret)=> {
+        res.send(ret)
+    })
+})
+.get("/:postSeq",(req,res)=>{
+    const { postSeq } = req.params;
+    util.transaction(req,query.getPost)
+    .then((ret)=>{
         res.send(ret)
     })
 })
@@ -36,8 +44,18 @@ router
         }
     })
 })
+.patch("/chgPost",(req,res)=>{
+    util.transaction(req,postQuery.chgPost)
+    .then( (ret) => {
+        res.send(ret)
+        if(ret.ok == true){
+            broadcast(new wsJson("event").event("PATCH","posts",req.body.postSeq,req.body.UID))
+        }
+    })
+
+})
 .delete("/:postSeq",async (req,res)=>{
-    const { postSeq, UID } = req.params;
+    const { postSeq } = req.params;
     util.transaction(req,query.removePostQuery)
     .then( (ret)=> {
         res.send(ret)

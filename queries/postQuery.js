@@ -146,7 +146,7 @@ const query = {
             ,BRD_END_SYS_TP = ${dbc.escape(data.sysTp)}
             ,BRD_END_CTG = ${dbc.escape(data.postCtg)}
             ,BRD_END_CTG_DTL = ${dbc.escape(data.postCtgDtl)}
-            ,BRD_END_FLLW_UP_SEQ = ${dbc.escape(data.addFollowUpPost.insertId)} 
+            ,BRD_END_FLLW_UP_SEQ = ${dbc.escape(data?.addFollowUpPost?.insertId)} 
             ,BRD_MOD_DTM = NOW()
         WHERE BRD_SEQ  = ${dbc.escape(data.postSeq)};`
     },

@@ -112,8 +112,8 @@ const query = {
         ,brd.BRD_PRGSS_TF 	     -- 진행상태 코드
         ,brd.BRD_RSN_PNDNG 	     -- 대기 사유
         ,brd.BRD_END_SYS_TP      -- 종료 - 시스템구분
-        ,brd.BRD_END_TP          -- 종료 - SR유형/에러
-        ,brd.BRD_END_TP_DTL      -- 종료 - 유형 상세
+        ,brd.BRD_END_CTG          -- 종료 - SR유형/에러
+        ,brd.BRD_END_CTG_DTL      -- 종료 - 유형 상세
         ,brd2.BRD_NO  AS FOLLOWUP_POST_BRD_NO 			 -- 종료 - 후속조치 게시물번호
         FROM BRD brd
         LEFT OUTER JOIN BRD brd2

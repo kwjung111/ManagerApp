@@ -30,6 +30,7 @@ class wsJson{
         if(this.json.type !== "event"){
             throw new Error('이벤트 타입이 아님')
         }
+        console.log(meta)
         this.json.data = {
             method:method,
             resource:resource,

@@ -54,6 +54,46 @@ router
     })
 
 })
+//TODO 트랜잭션 공통화
+.patch("/clsPost",(req,res)=>{
+    let queries;
+
+    if(req.body.followUp == 1){    //후속 게시물 등록
+        queries = [postQuery.addFollowUpPost,postQuery.clsPost]
+    }else{
+        queries = [postQuery.clsPost]
+    }
+
+    util.transactions(req,queries,false) //쿼리 동기화
+    .then((ret) => {
+        res.send(ret)
+        if(ret.ok == true){
+            if(req.body.followUp == 1){    //후속게시물 등록시
+                let meta = {
+                    followUp : req.body.addFollowUpPost.insertId,        //함수이름 하드코딩
+                }
+                broadcast(new wsJson("event")
+                .event("PATCH"
+                ,"posts"
+                ,req.body.postSeq
+                ,req.body.UID
+                ,req.body.followUpCntns
+                ,meta))
+            }
+            else{
+                broadcast(new wsJson("event")
+                .event(
+                    "PATCH"
+                    ,"posts"
+                    ,req.body.postSeq
+                    ,req.body.UID
+                    ,null))
+            }
+        }
+    })
+
+})
+
 .delete("/:postSeq",async (req,res)=>{
     const { postSeq } = req.params;
     util.transaction(req,query.removePostQuery)

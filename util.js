@@ -93,6 +93,7 @@ const util = {
         results = [];
         for (let qry of queries) {
           let [result] = await conn.query(qry(data));
+          data[qry.name] = result;
           results.push(result);
         }
       }

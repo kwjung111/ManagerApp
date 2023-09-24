@@ -77,9 +77,7 @@ app.get('/postTree',async (req,res) =>{
     .then((ret) => {
         let posts = ret.result[0]
         let memos = ret.result[1]
-
-        console.log(memos)
-        
+                
         rt.ok = true
         rt.msg = 200
         rt.result = util.makeTree(posts,memos)

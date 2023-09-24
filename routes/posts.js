@@ -2,6 +2,7 @@ const express = require("express")
 const router = express.Router();
 const util = require("../util.js")
 const query = require("../queries/query.js")
+const postQuery = require("../queries/postQuery.js")
 const {wsJson,broadcast} = require('../wss.js')
 
 
@@ -9,6 +10,13 @@ router
 .get("/",(req,res)=>{
     util.transaction(req,query.getPosts)
     .then( (ret)=> {
+        res.send(ret)
+    })
+})
+.get("/:postSeq",(req,res)=>{
+    const { postSeq } = req.params;
+    util.transaction(req,query.getPost)
+    .then((ret)=>{
         res.send(ret)
     })
 })
@@ -36,8 +44,58 @@ router
         }
     })
 })
+.patch("/chgPost",(req,res)=>{
+    util.transaction(req,postQuery.chgPost)
+    .then( (ret) => {
+        res.send(ret)
+        if(ret.ok == true){
+            broadcast(new wsJson("event").event("PATCH","posts",req.body.postSeq,req.body.UID))
+        }
+    })
+
+})
+//TODO 트랜잭션 공통화
+.patch("/clsPost",(req,res)=>{
+    let queries;
+
+    if(req.body.followUp == 1){    //후속 게시물 등록
+        queries = [postQuery.addFollowUpPost,postQuery.clsPost]
+    }else{
+        queries = [postQuery.clsPost]
+    }
+
+    util.transactions(req,queries,false) //쿼리 동기화
+    .then((ret) => {
+        res.send(ret)
+        if(ret.ok == true){
+            if(req.body.followUp == 1){    //후속게시물 등록시
+                let meta = {
+                    followUp : req.body.addFollowUpPost.insertId,        //함수이름 하드코딩
+                }
+                broadcast(new wsJson("event")
+                .event("PATCH"
+                ,"posts"
+                ,req.body.postSeq
+                ,req.body.UID
+                ,req.body.followUpCntns
+                ,meta))
+            }
+            else{
+                broadcast(new wsJson("event")
+                .event(
+                    "PATCH"
+                    ,"posts"
+                    ,req.body.postSeq
+                    ,req.body.UID
+                    ,null))
+            }
+        }
+    })
+
+})
+
 .delete("/:postSeq",async (req,res)=>{
-    const { postSeq, UID } = req.params;
+    const { postSeq } = req.params;
     util.transaction(req,query.removePostQuery)
     .then( (ret)=> {
         res.send(ret)

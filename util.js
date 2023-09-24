@@ -49,7 +49,6 @@ const util = {
     };
     let data = util.parseReqBody(req);
     let conn = null;
-
     try {
       conn = await dbcPool.getConnection();
       await conn.beginTransaction();
@@ -94,6 +93,7 @@ const util = {
         results = [];
         for (let qry of queries) {
           let [result] = await conn.query(qry(data));
+          data[qry.name] = result;
           results.push(result);
         }
       }

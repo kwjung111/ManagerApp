@@ -75,7 +75,7 @@ const query = {
             AND BRD_PRGSS_TF = '2'
             AND BRD_USE_TF = TRUE THEN 1 END) AS pending
         FROM BRD
-        WHERE BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
+        -- WHERE BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
         `
     },
 
@@ -89,6 +89,8 @@ const query = {
 	    BRD_CTNTS,
 	    BRD_WRTR,
 	    BRD_REG_DTM,
+        BRD_RSN_PNDNG,
+        BRD_END_SYS_TP, -- 추석 관련 완료작업
 	    CASE WHEN BRD_PRGSS_TF = '1' THEN
                 SEC_TO_TIME(
                     TIME_TO_SEC(TIMEDIFF(NOW(),IFNULL(BRD_ACT_STRT_DTM,BRD_REG_DTM))) +
@@ -100,7 +102,7 @@ const query = {
 
     WHERE 1=1 
 	    AND BRD_USE_TF = TRUE
-        AND BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
+        -- AND BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
 	ORDER BY BRD_SEQ DESC;`
     },
     //게시물 상세 조회
@@ -137,7 +139,7 @@ INNER JOIN BRD brd
  AND brd.BRD_SEQ  = memo.BRD_SEQ 
  -- AND brd.BRD_PRGSS_TF = TRUE /* 항상 보이게 변경 */ 
  AND brd.BRD_USE_TF = TRUE
- AND brd.BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
+ -- AND brd.BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
  
 WHERE 1=1 
  AND memo.MEMO_USE_TF  = TRUE`

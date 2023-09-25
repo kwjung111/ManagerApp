@@ -52,7 +52,7 @@ const query = {
                 AND BRD_PRGSS_TF = '2'
                 AND BRD_USE_TF = TRUE THEN 1 END) AS pending
         FROM BRD
-        WHERE BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
+        -- WHERE BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
         `
     },
 
@@ -66,6 +66,7 @@ const query = {
 	    BRD_CTNTS,
 	    BRD_WRTR,
 	    BRD_REG_DTM,
+        BRD_RSN_PNDNG,
 	    CASE WHEN BRD_PRGSS_TF = '1' THEN
             SEC_TO_TIME(
                 TIME_TO_SEC(TIMEDIFF(NOW(),IFNULL(BRD_ACT_STRT_DTM,BRD_REG_DTM))) +
@@ -146,7 +147,7 @@ const query = {
             ,BRD_END_SYS_TP = ${dbc.escape(data.sysTp)}
             ,BRD_END_CTG = ${dbc.escape(data.postCtg)}
             ,BRD_END_CTG_DTL = ${dbc.escape(data.postCtgDtl)}
-            ,BRD_END_FLLW_UP_SEQ = ${dbc.escape(data?.addFollowUpPost?.insertId)} 
+            ,BRD_END_FLLW_UP_SEQ = IFNULL(${dbc.escape(data?.addFollowUpPost?.insertId)} ,BRD_END_FLLW_UP_SEQ)
             ,BRD_MOD_DTM = NOW()
         WHERE BRD_SEQ  = ${dbc.escape(data.postSeq)};`
     },

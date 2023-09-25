@@ -19,6 +19,7 @@ const postsRouter = require('./routes/posts.js')
 const memosRouter = require('./routes/memos.js')
 const sessionRouter = require('./routes/session.js')
 const cmmnRouter = require('./routes/cmmn.js')
+const { swaggerUi, specs } = require('./swagger');
 
 //CORS 허용
 app.use(cors())
@@ -54,7 +55,9 @@ app.use('/posts',postsRouter)
 app.use('/memos',memosRouter)
 app.use('/session',sessionRouter)
 app.use('/cmmn',cmmnRouter)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
+//TODO 라우팅 빼기
 app.get("/postsCount",(req,res)=>{
     util.transaction(req,query.getPostsCount)
     .then( (ret)=> {

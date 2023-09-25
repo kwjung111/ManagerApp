@@ -5,7 +5,37 @@ const query = require("../queries/query.js")
 const postQuery = require("../queries/postQuery.js")
 const {wsJson,broadcast} = require('../wss.js')
 
-
+/**
+ * @swagger
+ * paths:
+ *  /posts:
+ *    get:
+ *      summary: "최근 7일 간 전체 게시물 조회"
+ *      description: "Get 방식으로 요청"
+ *      tags: [posts]
+ *      responses:
+ *        "200":
+ *          description: "최근 7일 간 전체 게시물 조회"
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                    ok:
+ *                      type: boolean
+ *                    results:
+ *                      type: object
+ *                      example:
+ *                          [
+ *                            { "BRD_POST_SEQ": "1", 
+ *                              "BRD_NO": "1" , 
+ *                              "BRD_PRGSS_TF" : "2",
+ *	                            "BRD_CTNTS":"[SR1] 무슨무슨 오류",
+ *	                            "BRD_WRTR": "정강욱",
+ *	                            "BRD_REG_DTM":"2023-09-24 11:22:11",
+ *                              "BRD_RSN_PNDNG":"대기중인이유"},
+ *                          ]
+ */
 router
 .get("/",(req,res)=>{
     util.transaction(req,query.getPosts)

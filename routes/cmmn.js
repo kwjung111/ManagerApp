@@ -7,7 +7,7 @@ const cmmnQuery = require("../queries/cmmn.js")
 router
 .get("/cmcd/:grpCd",(req,res)=>{
     util.transaction(req, cmmnQuery.getCmCd)
-    .then( (ret)=> {
+    .then((ret)=> {
         res.send(ret)
         console.log(ret)
     })

@@ -5,6 +5,9 @@ const query = require("../queries/query.js")
 const postQuery = require("../queries/postQuery.js")
 const {wsJson,broadcast} = require('../wss.js')
 
+
+
+
 /**
  * @swagger
  * paths:
@@ -43,6 +46,34 @@ router
         res.send(ret)
     })
 })
+
+.get("/count",(req,res)=>{
+    util.transaction(req,query.getPostsCount)
+    .then( (ret)=> {
+        res.send(ret)
+    })
+})
+
+.get('/tree',async (req,res) =>{
+
+    let rt = {
+        ok : false,
+        msg : '',
+        result : null
+    }
+
+    util.transactions(req,[query.getPosts,query.getMemos],true)
+    .then((ret) => {
+        let posts = ret.result[0]
+        let memos = ret.result[1]
+                
+        rt.ok = true
+        rt.msg = 200
+        rt.result = util.makeTree(posts,memos)
+        res.send(rt)
+    })
+})  
+
 .get("/:postSeq",(req,res)=>{
     const { postSeq } = req.params;
     util.transaction(req,query.getPost)
@@ -50,6 +81,8 @@ router
         res.send(ret)
     })
 })
+
+
 .post("/",(req,res)=>{
     util.transaction(req,query.addPostQuery)
     .then( (ret)=> {
@@ -135,5 +168,4 @@ router
     })
 
 })
-
 module.exports = router;

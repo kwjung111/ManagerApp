@@ -1,5 +1,6 @@
 const query = require("./queries/query.js");
 const dbcPool = require("./dbconn.js");
+const crypto = require('crypto')
 const { wss } = require("./wss.js");
 
 const util = {
@@ -55,7 +56,8 @@ const util = {
 
       const [result] = await conn.query(queries(data));
       rt.ok = true;
-      (rt.msg = "200"), (rt.result = result);
+      rt.msg = "200";
+      rt.result = result;
       await conn.commit();
       conn.release();
     } catch (err) {
@@ -113,6 +115,18 @@ const util = {
     }
     return rt;
   },
+  //salt 생성하는 비동기 함수
+  createSalt: () =>
+    new Promise((resolve, reject) => {
+        crypto.randomBytes(64, (err, buf) => {
+            if (err) reject(err);
+            resolve(buf.toString('base64'));
+        });
+    }),
+  
+
+  
+
 };
 
 module.exports = util;

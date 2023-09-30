@@ -2,9 +2,12 @@ const dbc = require("../dbconn.js");
 const authQuery = {
     checkId: function (data) {
       return `
-      SELECT MBR_ID AS ID,
+      SELECT 
+      MBR_SEQ AS SEQ,
+      MBR_ID AS ID,
       MBR_PWD AS PWD,
-      MBR_SALT AS SALT
+      MBR_SALT AS SALT,
+      MBR_ROLE AS ROLE
       FROM MBR
       WHERE MBR_ID = ${dbc.escape(data.id)}`
     },

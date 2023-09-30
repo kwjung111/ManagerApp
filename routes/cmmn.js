@@ -9,7 +9,6 @@ router
     util.transaction(req, cmmnQuery.getCmCd)
     .then((ret)=> {
         res.send(ret)
-        console.log(ret)
     })
 })
 

@@ -10,6 +10,7 @@ const query = {
         BRD_USE_TF,
         BRD_WRTR,
         BRD_POST_CD,
+        REG_MBR_SEQ,
         BRD_ACT_STRT_DTM,
         BRD_REG_DTM
         )VALUES(
@@ -23,6 +24,7 @@ const query = {
         TRUE,
         ${dbc.escape(data.writer)},
         ${dbc.escape(data.postCd)},
+        ${dbc.escape(data.userData.seq)},
         NOW(),
         NOW()
     )`},
@@ -32,12 +34,14 @@ const query = {
             BRD_SEQ,
             MEMO_CTNTS,
             MEMO_WRTR,
-            MEMO_REG_DTM,
-            MEMO_USE_TF 
+            REG_MBR_SEQ,
+            MEMO_REG_DTM,   
+            MEMO_USE_TF
             )VALUES(
             ${dbc.escape(data.postSeq)},
             ${dbc.escape(data.content)},
             ${dbc.escape(data.writer)},
+            ${dbc.escape(data.userData.seq)},
             NOW(),
             TRUE)`
     },

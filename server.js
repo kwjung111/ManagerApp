@@ -95,18 +95,18 @@ app.get('/identifier',(req,res)=>{
 function verifyToken(req,res,next){
     const token = req.headers.authorization;
 
-    console.log(req.headers)
     if(!token){
         return res.status(403).json({message:'토큰 없음'})
     }
 
     jwt.verify(token,'prvkey',(err, decoded) => {
         if(err){
+            console.log(token)
             console.log(err)
             return res.status(500).json({message:'Access Token 검증 실패'})
         }
 
-        req.userData = decoded;
+        req.body.userData = decoded;     
         next();
     })
 }

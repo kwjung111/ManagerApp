@@ -13,7 +13,14 @@ initWss = (server) =>{
         });
     
         ws.send(new wsJson('message').message('you are connected to Server'))
+
+        ws.on('close', () => {
+            ws.removeAllListeners('message');   //message 이벤트의 리스너 제거
+        });
+
     });
+
+
 }
 
 //웹소켓 json 메세지 파싱

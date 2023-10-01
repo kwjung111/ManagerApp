@@ -19,6 +19,7 @@ const authQuery = {
             MBR_SALT,
             MBR_NM,
             MBR_EMAIL,
+            MBR_ROLE,
             MBR_MOD_DTM,
             MBR_REG_DTM
         )VALUES(
@@ -27,6 +28,7 @@ const authQuery = {
             ${dbc.escape(data.salt)},
             ${dbc.escape(data.name)},
             ${dbc.escape(data.email)},
+            'USER',
             now(),
             now()
         );

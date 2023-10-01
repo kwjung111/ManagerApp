@@ -3,8 +3,40 @@ const router = express.Router();
 const util = require("../util.js");
 const authQuery = require("../queries/authQuery.js");
 const jwt = require("jsonwebtoken");
+const nodemailer = require('nodemailer')
 const crypto = require("crypto");
-const { EvalSourceMapDevToolPlugin } = require("webpack");
+
+const prvKey = process.env.PRV_KEY
+
+const mailTransporter = nodemailer.createTransport({
+  service: 'gmail',   // 메일 보내는 곳
+  port: 587,
+  host: 'smtp.gmlail.com',  
+  secure: false,  
+  requireTLS: true ,
+  auth: {
+    user: process.env.MAIL_SENDER,  // 보내는 메일의 주소
+    pass: process.env.MAIL_PASS   // 보내는 메일의 비밀번호
+  }});
+
+const mailSender = {
+    sendMail: async function (param) {
+
+        // 메일 옵션
+        let mailOptions = {
+          from: process.env.MAIL_SENDER , // 보내는 메일의 주소
+          to: param.toEmail, // 수신할 이메일
+          subject: param.subject, // 메일 제목
+          text: param.text // 메일 내용
+          //html: template
+        };
+        // 메일 발송    
+        const result = await mailTransporter.sendMail(mailOptions);
+        console.log(result)
+        return result;
+      }
+    }
+    
 
 //로그인 관련 코드
 router
@@ -34,8 +66,7 @@ router
           seq: chkRst.SEQ,
           role: chkRst.ROLE,
         };
-        const prvkey = "prvkey";
-        const token = jwt.sign(payload, prvkey, { expiresIn: "24h" }); //jwt 토큰 쿠키로 전달
+        const token = jwt.sign(payload, prvKey, { expiresIn: "24h" }); //jwt 토큰 쿠키로 전달
         res.cookie("jwt", token, {
           maxAge: 86400000, //24*60*60*1000, ms 단위
           //httpOnly:true,
@@ -80,16 +111,6 @@ router
       res.send(ret);
     });
   })
-  .post("/signUp", async (req, res) => {
-    //id, 비밀번호 값 validation 코드 작성
-    const salted = await createHashedPassword("test");
-    req.body.pwd = salted.pwd;
-    req.body.salt = salted.salt;
-    util.transaction(req, authQuery.signUp).then((ret) => {
-      console.log(ret);
-      res.send(ret);
-    });
-  })
   //로그인 페이지 진입 시, 토큰 유효성 검사
   .get("/chkToken", async (req, res) => {
     const token = req.headers.authorization;
@@ -97,7 +118,7 @@ router
     let rt = {
       ok: true,
       result: {},
-      messsage: null,
+      message: null,
     };
 
     if (!token) {
@@ -106,7 +127,7 @@ router
         rt.result.message = 'Token 없음'
       res.send(rt)
     } else {
-      jwt.verify(token, "prvkey", (err, decoded) => {
+      jwt.verify(token, prvKey, (err, decoded) => {
         if (err) {
           console.log(err);
           rt.ok = false,
@@ -122,7 +143,36 @@ router
         res.send(rt)
       });
     }
-  });
+  })
+  //회원가입 관련 코드들
+  .post("/signUp", async (req, res) => {
+    //TODO id, 비밀번호 값 validation 코드 작성
+    let validator= signUpValidator(req)
+    if(!validator.ok){
+        res.send(validator)
+        return 
+    }
+    const salted = await createHashedPassword(req.body.pwd);
+    req.body.pwd = salted.pwd;
+    req.body.salt = salted.salt;
+    util.transaction(req, authQuery.signUp).then((ret) => {
+      console.log(ret);
+      res.send(ret);
+    });
+  })
+  .get("/sendMailForSignUp",async (req,res) => {
+    try{
+    mailSender.sendMail({
+        toEmail:'kwkwjung@gmail.com', // 수신할 이메일
+        subject:'aa', // 메일 제목
+        text:'aa', // 메일 내용
+    })
+}catch(e){
+    console.log(e)
+}
+res.send('success?')
+
+  })
 
 //salt 값으로 해시된 비밀번호 반환
 function createHashedPassword(userPwd, userSalt = null) {
@@ -136,6 +186,33 @@ function createHashedPassword(userPwd, userSalt = null) {
       resolve({ pwd: key.toString("base64"), salt });
     });
   });
+}
+
+
+function signUpValidator(req){
+    let rt = {
+        ok:true,
+        result:{},
+        msg:'',
+    }
+    if(!req.body?.id || !req.body?.pwd || !req.body?.name || !req.body?.email){
+        rt.ok = false;
+        rt.msg = 'null filed exists'
+        return rt;
+    }
+    console.log(req.body)
+    if(req.body?.id.length <5){
+        rt.ok = false;
+        rt.msg ='id not validate'
+        return rt;
+    }
+    if(req.body?.pwd.length<5){
+        rt.ok = false;
+        rt.msg ='pwd not validate'
+        return rt
+    }
+    //TODO validation 코드 작성...
+    return rt
 }
 
 module.exports = router;

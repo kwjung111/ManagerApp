@@ -2,11 +2,12 @@
   "name": "platform",
   "version": "1.0.0",
   "description": "enterprise platform",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cross-env NODE_ENV=DEV nodemon server.js",
-    "start": "cross-env NODE_ENV=PRD node server.js"
+    "start": "NODE_ENV=PRD node server.js",
+    "inspect": "cross-env NODE_ENV=DEV node --inspect server.js"
   },
   "repository": {
     "type": "git",
@@ -17,22 +18,19 @@
   "dependencies": {
     "axios": "^1.5.0",
     "compression": "^1.7.4",
-    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "express-session": "^1.17.3",
     "http-proxy-middleware": "^2.0.6",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.6.0",
     "nodemailer": "^6.9.5",
-    "nodemon": "^3.0.1",
     "uuid": "^9.0.1",
-    "web-push": "^3.6.6",
     "ws": "^8.13.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
+    "nodemon": "^3.0.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "webpack": "^5.88.2",

@@ -35,7 +35,6 @@ const authRouter = require("./routes/auth.js");
 
 //정적 리소스 라우팅
 app.use(express.static(path.resolve(__dirname, "dist")));
-app.use("/srList", express.static(path.join(__dirname, "dist")));
 
 //CORS 허용
 app.use(
@@ -78,6 +77,13 @@ app.use(verifyToken);
 app.use("/posts", postsRouter);
 app.use("/memos", memosRouter);
 app.use("/cmmn", cmmnRouter);
+
+
+//TODO uuid -> jwt 기반으로 리팩토링하기
+app.get('/identifier',(req,res)=>{
+  const uniqueKey = uuidv4();
+  res.send(uniqueKey);
+})
 
 //미들웨어 Access Token 검증 코드
 

@@ -3,40 +3,39 @@ const router = express.Router();
 const util = require("../util.js");
 const authQuery = require("../queries/authQuery.js");
 const jwt = require("jsonwebtoken");
-const nodemailer = require('nodemailer')
+const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 
-const prvKey = process.env.PRV_KEY
+const prvKey = process.env.PRV_KEY;
 
 const mailTransporter = nodemailer.createTransport({
-  service: 'gmail',   // 메일 보내는 곳
+  service: "gmail", // 메일 보내는 곳
   port: 587,
-  host: 'smtp.gmlail.com',  
-  secure: false,  
-  requireTLS: true ,
+  host: "smtp.gmlail.com",
+  secure: false,
+  requireTLS: true,
   auth: {
-    user: process.env.MAIL_SENDER,  // 보내는 메일의 주소
-    pass: process.env.MAIL_PASS   // 보내는 메일의 비밀번호
-  }});
+    user: process.env.MAIL_SENDER, // 보내는 메일의 주소
+    pass: process.env.MAIL_PASS, // 보내는 메일의 비밀번호
+  },
+});
 
 const mailSender = {
-    sendMail: async function (param) {
-
-        // 메일 옵션
-        let mailOptions = {
-          from: process.env.MAIL_SENDER , // 보내는 메일의 주소
-          to: param.toEmail, // 수신할 이메일
-          subject: param.subject, // 메일 제목
-          text: param.text // 메일 내용
-          //html: template
-        };
-        // 메일 발송    
-        const result = await mailTransporter.sendMail(mailOptions);
-        console.log(result)
-        return result;
-      }
-    }
-    
+  sendMail: async function (param) {
+    // 메일 옵션
+    let mailOptions = {
+      from: process.env.MAIL_SENDER, // 보내는 메일의 주소
+      to: param.toEmail, // 수신할 이메일
+      subject: param.subject, // 메일 제목
+      text: param.text, // 메일 내용
+      html: param.html || null,
+    };
+    // 메일 발송
+    const result = await mailTransporter.sendMail(mailOptions);
+    console.log(result);
+    return result;
+  },
+};
 
 //로그인 관련 코드
 router
@@ -56,11 +55,21 @@ router
         return;
       }
 
+      //인증 여부 확인
+      if(chkRst.ROLE == 'PENDING'){
+        ret.result = {
+          code : "03",
+          status: "failed",
+        }
+        ret.message = "not authorized yet";
+        res.send(ret)
+        return;
+      }
       //비밀번호 검증 로직
       const salted = await createHashedPassword(pwd, chkRst.SALT);
       const saltedPwd = salted.pwd;
       //로그인 성공
-      if (saltedPwd == chkRst.PWD || (id == "test" && pwd == "test")) {
+      if (saltedPwd == chkRst.PWD) {
         const payload = {
           id: chkRst.ID,
           seq: chkRst.SEQ,
@@ -90,14 +99,14 @@ router
       }
     });
   })
-  .get("/logout", (req,res) => {
-    let rt= {
-        ok: true,
-        result:{},
-        message: 'logout success'
-    }
-    res.clearCookie('jwt')
-    res.send(rt)
+  .get("/logout", (req, res) => {
+    let rt = {
+      ok: true,
+      result: {},
+      message: "logout success",
+    };
+    res.clearCookie("jwt");
+    res.send(rt);
   })
   .get("/checkId/:id", (req, res) => {
     const { id } = req.params;
@@ -122,35 +131,33 @@ router
     };
 
     if (!token) {
-        rt.result.code = '01';
-        rt.result.status = 'no token'
-        rt.result.message = 'Token 없음'
-      res.send(rt)
+      rt.result.code = "01";
+      rt.result.status = "no token";
+      rt.result.message = "Token 없음";
+      res.send(rt);
     } else {
       jwt.verify(token, prvKey, (err, decoded) => {
         if (err) {
           console.log(err);
-          rt.ok = false,
-          rt.result.code = '02'
-          rt.result.status = 'err'
-          rt.message="Access Token 검증 실패"
-        }else{
-            rt.ok = true,
-            rt.result.code = '00'
-            rt.result.status = 'success',
-            rt.message = 'Access Token 확인완료'
+          (rt.ok = false), (rt.result.code = "02");
+          rt.result.status = "err";
+          rt.message = "Access Token 검증 실패";
+        } else {
+          (rt.ok = true), (rt.result.code = "00");
+          (rt.result.status = "success"),
+            (rt.message = "Access Token 확인완료");
         }
-        res.send(rt)
+        res.send(rt);
       });
     }
   })
   //회원가입 관련 코드들
   .post("/signUp", async (req, res) => {
     //TODO id, 비밀번호 값 validation 코드 작성
-    let validator= signUpValidator(req)
-    if(!validator.ok){
-        res.send(validator)
-        return 
+    let validator = signUpValidator(req);
+    if (!validator.ok) {
+      res.send(validator);
+      return;
     }
     const salted = await createHashedPassword(req.body.pwd);
     req.body.pwd = salted.pwd;
@@ -160,18 +167,49 @@ router
       res.send(ret);
     });
   })
-  .get("/sendMailForSignUp",async (req,res) => {
-    try{
-    mailSender.sendMail({
-        toEmail:'kwkwjung@gmail.com', // 수신할 이메일
-        subject:'aa', // 메일 제목
-        text:'aa', // 메일 내용
-    })
-}catch(e){
-    console.log(e)
-}
-res.send('success?')
 
+  .post("/sendMailForSignUp", async (req, res) => {
+    try {
+      const token = jwt.sign({id:req.body.id}, 'emailAuth', { expiresIn: "3m" });   //이메일 인증 prvkey 하드코딩
+
+      mailSender.sendMail({
+        toEmail: `kwjung@businessinsight.co.kr`, // 수신할 이메일
+        subject: "[SRSYSTEM] 회원가입 관련 이메일입니다.", // 메일 제목
+        text: `https://localhost:3000/auth/authForSignUp/${token}`, // 메일 내용, 현재 url 하드코딩
+      });
+      console.log(token)
+    } catch (e) {
+      console.log(e);
+    }
+
+    res.send("테스트 중입니다..");
+  })
+
+  .get("/authForSignUp/:token", async (req,res) => {
+    let {token} = req.params
+    console.log(token)
+    if (!token) {
+      res.send('인증 실패! 토큰이 없습니다.')
+      return;
+    }
+  
+    jwt.verify(token, 'emailAuth', (err, decoded) => {
+      if (err) {
+        console.log(err);
+        res.send('유효하지 않은 토큰이거나 만료된 토큰입니다.');
+        return;
+      } else {
+        req.params.id = decoded.id;
+        util.transaction(req, authQuery.signUpCheck).then((ret) => {
+          if(ret.msg == "200"){
+          res.send('인증 성공! 이제 돌아가서 로그인 해 주세요');
+          }
+          else{
+            res.send('인증 실패! 토큰이 유효하지 않습니다.')
+          }
+        });
+      }
+    });
   })
 
 //salt 값으로 해시된 비밀번호 반환
@@ -188,31 +226,31 @@ function createHashedPassword(userPwd, userSalt = null) {
   });
 }
 
-
-function signUpValidator(req){
-    let rt = {
-        ok:true,
-        result:{},
-        msg:'',
-    }
-    if(!req.body?.id || !req.body?.pwd || !req.body?.name || !req.body?.email){
-        rt.ok = false;
-        rt.msg = 'null filed exists'
-        return rt;
-    }
-    console.log(req.body)
-    if(req.body?.id.length <5){
-        rt.ok = false;
-        rt.msg ='id not validate'
-        return rt;
-    }
-    if(req.body?.pwd.length<5){
-        rt.ok = false;
-        rt.msg ='pwd not validate'
-        return rt
-    }
-    //TODO validation 코드 작성...
-    return rt
+function signUpValidator(req) {
+  let rt = {
+    ok: true,
+    result: {},
+    msg: "",
+  };
+  if (!req.body?.id || !req.body?.pwd || !req.body?.name || !req.body?.email) {
+    rt.ok = false;
+    rt.msg = "null filed exists";
+    return rt;
+  }
+  console.log(req.body);
+  if (req.body?.id.length < 5) {
+    rt.ok = false;
+    rt.msg = "id not validate";
+    return rt;
+  }
+  if (req.body?.pwd.length < 5) {
+    rt.ok =   false;
+    rt.msg = "pwd not validate";
+    return rt;
+  }
+  //TODO validation 코드 작성...
+  //todo 정규식 이메일 관련
+  return rt;
 }
 
 module.exports = router;

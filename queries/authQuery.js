@@ -28,11 +28,18 @@ const authQuery = {
             ${dbc.escape(data.salt)},
             ${dbc.escape(data.name)},
             ${dbc.escape(data.email)},
-            'USER',
+            'PENDING',
             now(),
             now()
         );
         `
+    },
+    signUpCheck : function(data){
+      return`
+      UPDATE MBR SET
+        MBR_ROLE = 'USER'
+      WHERE MBR_ID = ${dbc.escape(data.id)}
+      `
     }
   };
 

@@ -18,6 +18,7 @@ const util = {
     }, []);
   },
 
+  //Todo 배열의 경우 처리 못함, 순환 참조 처리 불가
   deepCopy: (obj) => {
     if (obj === null || typeof obj !== "object") return obj;
 
@@ -30,7 +31,6 @@ const util = {
 
   //data의 Body, 경로 변수를 Object 형태로 반환
   parseReqBody: (req) => {
-    let data = {};
     if (req.method == "GET") {
       return req.params;
     } else if (req.method == "POST") {

@@ -31,13 +31,13 @@ const authQuery = {
             'PENDING',
             now(),
             now()
-        );
-        `
+        );`
     },
     signUpCheck : function(data){
       return`
       UPDATE MBR SET
-        MBR_ROLE = 'USER'
+        MBR_ROLE = 'USER',
+        MBR_MOD_DTM = NOW()
       WHERE MBR_ID = ${dbc.escape(data.id)}
       `
     }

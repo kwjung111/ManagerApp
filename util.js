@@ -55,11 +55,11 @@ const util = {
       await conn.beginTransaction();
 
       const [result] = await conn.query(queries(data));
+      await conn.commit();
+      conn.release();
       rt.ok = true;
       rt.msg = "200";
       rt.result = result;
-      await conn.commit();
-      conn.release();
     } catch (err) {
       console.error(err);
       rt.msg = "400";
@@ -99,11 +99,11 @@ const util = {
           results.push(result);
         }
       }
+      await conn.commit();
+      conn.release();
       rt.ok = true;
       rt.msg = "200";
       rt.result = results;
-      await conn.commit();
-      conn.release();
     } catch (err) {
       console.error(err);
       rt.msg = "400";

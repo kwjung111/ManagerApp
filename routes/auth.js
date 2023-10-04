@@ -27,7 +27,7 @@ const mailSender = {
       from: process.env.MAIL_SENDER, // 보내는 메일의 주소
       to: param.toEmail, // 수신할 이메일
       subject: param.subject, // 메일 제목
-      text: param.text, // 메일 내용
+      text: param.text || null, // 메일 내용
       html: param.html || null,
     };
     // 메일 발송
@@ -55,21 +55,22 @@ router
         return;
       }
 
-      //인증 여부 확인
-      if(chkRst.ROLE == 'PENDING'){
-        ret.result = {
-          code : "03",
-          status: "failed",
-        }
-        ret.message = "not authorized yet";
-        res.send(ret)
-        return;
-      }
       //비밀번호 검증 로직
       const salted = await createHashedPassword(pwd, chkRst.SALT);
       const saltedPwd = salted.pwd;
       //로그인 성공
       if (saltedPwd == chkRst.PWD) {
+        //인증 여부 확인
+        if (chkRst.ROLE == "PENDING") {
+          ret.result = {
+            code: "03",
+            status: "failed",
+          };
+          ret.message = "not authorized yet";
+          res.send(ret);
+          return;
+        }
+
         const payload = {
           id: chkRst.ID,
           seq: chkRst.SEQ,
@@ -89,6 +90,7 @@ router
         res.send(ret);
         return;
       } else {
+        //비밀번호 오류
         ret.result = {
           code: "02",
           status: "failed",
@@ -163,54 +165,56 @@ router
     req.body.pwd = salted.pwd;
     req.body.salt = salted.salt;
     util.transaction(req, authQuery.signUp).then((ret) => {
-      console.log(ret);
       res.send(ret);
     });
   })
 
   .post("/sendMailForSignUp", async (req, res) => {
     try {
-      const token = jwt.sign({id:req.body.id}, 'emailAuth', { expiresIn: "3m" });   //이메일 인증 prvkey 하드코딩
+      const token = jwt.sign({ id: req.body.id }, "emailAuth", {
+        expiresIn: "3m",
+      }); //이메일 인증 prvkey 하드코딩
 
       mailSender.sendMail({
-        toEmail: `kwjung@businessinsight.co.kr`, // 수신할 이메일
+        toEmail: `${req.body.email}@businessinsight.co.kr`, // 수신할 이메일
         subject: "[SRSYSTEM] 회원가입 관련 이메일입니다.", // 메일 제목
-        text: `https://localhost:3000/auth/authForSignUp/${token}`, // 메일 내용, 현재 url 하드코딩
+        html: `
+        <p>${req.body.id}님의 계정 인증을 위해 링크를 클릭해 주세요.</p>
+        <a href="https://localhost:3000/auth/authForSignUp/${token}">인증하기</a>`, // 메일 내용, 현재 url 하드코딩
       });
-      console.log(token)
     } catch (e) {
       console.log(e);
-    }
-
-    res.send("테스트 중입니다..");
-  })
-
-  .get("/authForSignUp/:token", async (req,res) => {
-    let {token} = req.params
-    console.log(token)
-    if (!token) {
-      res.send('인증 실패! 토큰이 없습니다.')
+      res.send("error")
       return;
     }
-  
-    jwt.verify(token, 'emailAuth', (err, decoded) => {
+    res.send("success")
+  })
+
+  .get("/authForSignUp/:token", async (req, res) => {
+    let { token } = req.params;
+    console.log(token);
+    if (!token) {
+      res.send("인증 실패! 토큰이 없습니다.");
+      return;
+    }
+
+    jwt.verify(token, "emailAuth", (err, decoded) => {
       if (err) {
         console.log(err);
-        res.send('유효하지 않은 토큰이거나 만료된 토큰입니다.');
+        res.send("유효하지 않은 토큰이거나 만료된 토큰입니다.");
         return;
       } else {
         req.params.id = decoded.id;
         util.transaction(req, authQuery.signUpCheck).then((ret) => {
-          if(ret.msg == "200"){
-          res.send('인증 성공! 이제 돌아가서 로그인 해 주세요');
-          }
-          else{
-            res.send('인증 실패! 토큰이 유효하지 않습니다.')
+          if (ret.msg == "200") {
+            res.send("인증 성공! 이제 돌아가서 로그인 해 주세요");
+          } else {
+            res.send("인증 실패! 토큰이 유효하지 않습니다.");
           }
         });
       }
     });
-  })
+  });
 
 //salt 값으로 해시된 비밀번호 반환
 function createHashedPassword(userPwd, userSalt = null) {
@@ -244,7 +248,7 @@ function signUpValidator(req) {
     return rt;
   }
   if (req.body?.pwd.length < 5) {
-    rt.ok =   false;
+    rt.ok = false;
     rt.msg = "pwd not validate";
     return rt;
   }
@@ -252,5 +256,6 @@ function signUpValidator(req) {
   //todo 정규식 이메일 관련
   return rt;
 }
+
 
 module.exports = router;

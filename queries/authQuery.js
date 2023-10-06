@@ -21,7 +21,8 @@ const authQuery = {
             MBR_EMAIL,
             MBR_ROLE,
             MBR_MOD_DTM,
-            MBR_REG_DTM
+            MBR_REG_DTM,
+            MBR_USE_TF
         )VALUES(
             ${dbc.escape(data.id)},
             ${dbc.escape(data.pwd)},
@@ -30,7 +31,8 @@ const authQuery = {
             ${dbc.escape(data.email)},
             'PENDING',
             now(),
-            now()
+            now(),
+            true
         );`
     },
     signUpCheck : function(data){

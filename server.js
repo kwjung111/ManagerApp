@@ -32,6 +32,7 @@ const postsRouter = require("./routes/posts.js");
 const memosRouter = require("./routes/memos.js");
 const cmmnRouter = require("./routes/cmmn.js");
 const authRouter = require("./routes/auth.js");
+const scheduleRouter = require("./routes/schedule.js");
 
 //정적 리소스 라우팅
 app.use(express.static(path.resolve(__dirname, "dist")));
@@ -77,6 +78,7 @@ app.use(verifyToken);
 app.use("/posts", postsRouter);
 app.use("/memos", memosRouter);
 app.use("/cmmn", cmmnRouter);
+app.use("/schedule", scheduleRouter)
 
 
 //TODO uuid -> jwt 기반으로 리팩토링하기

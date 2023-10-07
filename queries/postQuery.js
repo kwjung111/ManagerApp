@@ -79,7 +79,7 @@ const query = {
 
     WHERE 1=1 
 	    AND BRD_USE_TF = TRUE
-        AND BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
+        AND (BRD_PRGSS_TF IN (1,2) OR BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW())
 	ORDER BY BRD_SEQ DESC;`
     },
     //게시물 상세 조회
@@ -121,10 +121,10 @@ const query = {
         BRD_POST_CD
     FROM BRD
 
-    WHERE 1=1 
+    WHERE 1=1
 	    AND BRD_USE_TF = TRUE
         AND BRD_PRGSS_TF IN (1,2)
-	ORDER BY BRD_SEQ DESC;`
+	ORDER BY BRD_SEQ DESC`
     },
     //게시물 수정
     chgPost : function(data){

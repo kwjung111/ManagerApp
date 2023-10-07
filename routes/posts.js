@@ -36,12 +36,8 @@ router
 
 .get('/notFin',(req,res) =>{
 
-    util.transaction(postQuery.getNotFinPost)
+    util.transaction(req,postQuery.getNotFinPost)
     .then((ret) => {
-        let posts = ret.result[0]
-        let memos = ret.result[1]
-                
-        ret.result = util.makeTree(posts,memos)
         res.send(ret)
     })
 
@@ -82,7 +78,6 @@ router
     })
 
 })
-//TODO 트랜잭션 공통화
 .patch("/clsPost",(req,res)=>{
     let queries;
 

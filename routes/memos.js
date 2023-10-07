@@ -1,19 +1,19 @@
 const express = require("express")
 const router = express.Router();
 const util = require("../util.js")
-const query = require("../queries/query.js")
+const memoQuery = require("../queries/memoQuery.js")
 const {wsJson,broadcast} = require('../wss.js')
 
 router
 .get("/",(req,res)=>{
-    util.transaction(req,query.getMemos)
+    util.transaction(req,memoQuery.getMemos)
     .then( (ret)=> {
         res.send(ret)
         console.log(ret)
     })
 })
 .post("/",(req,res)=>{
-    util.transaction(req,query.addMemoQuery)
+    util.transaction(req,memoQuery.addMemoQuery)
     .then( (ret)=> {
         ret.result.postSeq = req.body.postSeq
         res.send(ret)
@@ -24,7 +24,7 @@ router
     })
 })
 .delete("/:memoSeq", async (req,res)=>{
-    util.transaction(req,query.removeMemoQuery)
+    util.transaction(req,memoQuery.removeMemoQuery)
     .then( (ret)=> {
         res.send(ret)
         broadcast(new wsJson("event")

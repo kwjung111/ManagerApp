@@ -2,6 +2,7 @@ const express = require("express");
 const compression = require("compression"); //텍스트 압축
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const { v4:uuidv4} = require("uuid")
 require("dotenv").config();
 const env = process.env.NODE_ENV;
 const http = require("http");
@@ -100,7 +101,7 @@ function verifyToken(req, res, next) {
     if (err) {
       console.log(token);
       console.log(err);
-      return res.status(500).json({ message: "Access Token 검증 실패" });
+      return res.status(401).json({ message: "Access Token 검증 실패" });
     } else {
       req.body.userData = decoded;
       next();

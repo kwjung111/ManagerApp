@@ -54,10 +54,9 @@ const query = {
                 AND BRD_PRGSS_TF = '2'
                 AND BRD_USE_TF = TRUE THEN 1 END) AS pending
         FROM BRD
-        -- WHERE BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
+        WHERE BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
         `
     },
-
     //게시물 내용 조회
     getPosts : function(){
         return `
@@ -67,7 +66,7 @@ const query = {
 	    BRD_PRGSS_TF,
 	    BRD_CTNTS,
 	    BRD_WRTR,
-	    BRD_REG_DTM,
+        DATE_FORMAT(BRD_REG_DTM, '%Y-%m-%d %H:%i:%s') AS BRD_REG_DTM,
         BRD_RSN_PNDNG,
 	    CASE WHEN BRD_PRGSS_TF = '1' THEN
             SEC_TO_TIME(
@@ -102,7 +101,31 @@ const query = {
             AND brd2.BRD_USE_TF = TRUE
         WHERE brd.BRD_SEQ = ${dbc.escape(data.postSeq)};`
     },
-    
+    //미처리 건 
+    getNotFinPost: function(data){
+        return`
+        SELECT 
+        CONCAT(DATE_FORMAT(BRD_REG_DTM, '%m'),"-",BRD_NO) AS BRD_NO,
+	    BRD_SEQ,
+	    BRD_PRGSS_TF,
+	    BRD_CTNTS,
+	    BRD_WRTR,
+	    BRD_REG_DTM,
+        BRD_RSN_PNDNG,
+	    CASE WHEN BRD_PRGSS_TF = '1' THEN
+            SEC_TO_TIME(
+                TIME_TO_SEC(TIMEDIFF(NOW(),IFNULL(BRD_ACT_STRT_DTM,BRD_REG_DTM))) +
+                TIME_TO_SEC(IFNULL(BRD_ACT_TOT_TIME,TIME(0))))
+		    WHEN BRD_PRGSS_TF IN (0,2) THEN 
+                IFNULL(BRD_ACT_TOT_TIME,'00:00:00')  END AS BRD_ELAPSED_TIME,
+        BRD_POST_CD
+    FROM BRD
+
+    WHERE 1=1 
+	    AND BRD_USE_TF = TRUE
+        AND BRD_PRGSS_TF IN (1,2)
+	ORDER BY BRD_SEQ DESC;`
+    },
     //게시물 수정
     chgPost : function(data){
         

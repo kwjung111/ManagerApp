@@ -1,21 +1,21 @@
 const express = require("express")
 const router = express.Router();
 const util = require("../util.js")
-const query = require("../queries/query.js")
 const postQuery = require("../queries/postQuery.js")
+const memoQuery = require("../queries/memoQuery.js")
 const {wsJson,broadcast} = require('../wss.js')
 
 
 router
 .get("/",(req,res)=>{
-    util.transaction(req,query.getPosts)
+    util.transaction(req,postQuery.getPosts)
     .then( (ret)=> {
         res.send(ret)
     })
 })
 
 .get("/count",(req,res)=>{
-    util.transaction(req,query.getPostsCount)
+    util.transaction(req,postQuery.getPostsCount)
     .then( (ret)=> {
         res.send(ret)
     })
@@ -24,7 +24,7 @@ router
 .get('/tree',async (req,res) =>{
 
 
-    util.transactions(req,[query.getPosts,query.getMemos],true)
+    util.transactions(req,[postQuery.getPosts,memoQuery.getMemos],true)
     .then((ret) => {
         let posts = ret.result[0]
         let memos = ret.result[1]
@@ -34,9 +34,24 @@ router
     })
 })  
 
+.get('/notFin',(req,res) =>{
+
+    util.transaction(postQuery.getNotFinPost)
+    .then((ret) => {
+        let posts = ret.result[0]
+        let memos = ret.result[1]
+                
+        ret.result = util.makeTree(posts,memos)
+        res.send(ret)
+    })
+
+})
+
+
+
 .get("/:postSeq",(req,res)=>{
     const { postSeq } = req.params;
-    util.transaction(req,query.getPost)
+    util.transaction(req,postQuery.getPost)
     .then((ret)=>{
         res.send(ret)
     })
@@ -44,7 +59,7 @@ router
 
 
 .post("/",(req,res)=>{
-    util.transaction(req,query.addPostQuery)
+    util.transaction(req,postQuery.addPostQuery)
     .then( (ret)=> {
         ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
         res.send(ret)
@@ -54,16 +69,6 @@ router
             .event("POST","posts",ret.result.insertId,req.body.UID,req.body.content)
             console.log(event)
             broadcast(event)
-        }
-    })
-})
-.patch("/prgState",(req,res)=>{
-    console.log(req.body)
-    util.transaction(req,query.changePrgState)
-    .then( (ret)=> {
-        res.send(ret)
-        if(ret.ok == true){
-            broadcast(new wsJson("event").event("PATCH","posts",req.body.postSeq,req.body.UID))
         }
     })
 })

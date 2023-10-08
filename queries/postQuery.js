@@ -79,7 +79,7 @@ const query = {
 
     WHERE 1=1 
 	    AND BRD_USE_TF = TRUE
-        AND (BRD_PRGSS_TF IN (1,2) OR BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW())
+        AND BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
 	ORDER BY BRD_SEQ DESC;`
     },
     //게시물 상세 조회
@@ -102,7 +102,7 @@ const query = {
         WHERE brd.BRD_SEQ = ${dbc.escape(data.postSeq)};`
     },
     //미처리 건 
-    getNotFinPost: function(data){
+    getNotFinPosts: function(data){
         return`
         SELECT 
         CONCAT(DATE_FORMAT(BRD_REG_DTM, '%m'),"-",BRD_NO) AS BRD_NO,
@@ -110,7 +110,7 @@ const query = {
 	    BRD_PRGSS_TF,
 	    BRD_CTNTS,
 	    BRD_WRTR,
-	    BRD_REG_DTM,
+	    DATE_FORMAT(BRD_REG_DTM, '%Y-%m-%d %H:%i:%s') AS BRD_REG_DTM,
         BRD_RSN_PNDNG,
 	    CASE WHEN BRD_PRGSS_TF = '1' THEN
             SEC_TO_TIME(
@@ -124,6 +124,7 @@ const query = {
     WHERE 1=1
 	    AND BRD_USE_TF = TRUE
         AND BRD_PRGSS_TF IN (1,2)
+        AND BRD_REG_DTM NOT BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
 	ORDER BY BRD_SEQ DESC`
     },
     //게시물 수정
@@ -203,6 +204,29 @@ const query = {
             NOW(),
             NOW()
         )`},
+        // 완료된 게시물( 달 기준으로 조회)
+        getPostsByMonth: function(data){
+            const query = `
+        SELECT 
+        CONCAT(DATE_FORMAT(BRD_REG_DTM, '%m'),"-",BRD_NO) AS BRD_NO,
+	    BRD_SEQ,
+	    BRD_PRGSS_TF,
+	    BRD_CTNTS,
+	    BRD_WRTR,
+        DATE_FORMAT(BRD_REG_DTM, '%Y-%m-%d %H:%i:%s') AS BRD_REG_DTM,
+        BRD_RSN_PNDNG,
+        IFNULL(BRD_ACT_TOT_TIME,'00:00:00')  AS BRD_ELAPSED_TIME,
+        BRD_POST_CD
+    FROM BRD
+    WHERE 1=1 
+    AND BRD_PRGSS_TF = '0'
+    AND BRD_USE_TF = TRUE
+	AND BRD_REG_DTM >= '${data.fromDate}'
+    AND BRD_REG_DTM < '${data.toDate}'
+		ORDER BY BRD_SEQ DESC  `
+        console.log(query)
+            return query
+        }
 }
 
 

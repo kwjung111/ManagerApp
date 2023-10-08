@@ -175,12 +175,20 @@ router
         expiresIn: "3m",
       }); //이메일 인증 prvkey 하드코딩
 
+      let url = null;
+
+      if(process.env.NODE_ENV === "DEV"){       //주소 하드코딩
+        url = "https://localhost:3000"
+      }else if(process.env.NODE_ENV === "PRD"){
+        url = "https://intra2.tomato-pos.com"   
+      }
+
       mailSender.sendMail({
         toEmail: `${req.body.email}@businessinsight.co.kr`, // 수신할 이메일
         subject: "[SRSYSTEM] 회원가입 관련 이메일입니다.", // 메일 제목
         html: `
         <p>${req.body.id}님의 계정 인증을 위해 링크를 클릭해 주세요.</p>
-        <a href="https://localhost:3000/auth/authForSignUp/${token}">인증하기</a>`, // 메일 내용, 현재 url 하드코딩
+        <a href="${url}/auth/authForSignUp/${token}">인증하기</a>`, // 메일 내용, 현재 url 하드코딩
       });
     } catch (e) {
       console.log(e);

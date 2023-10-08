@@ -35,10 +35,86 @@ router
 })  
 
 .get('/notFin',(req,res) =>{
-
-    util.transaction(req,postQuery.getNotFinPost)
+    util.transaction(req,postQuery.getNotFinPosts)
     .then((ret) => {
-        res.send(ret)
+        
+        const posts = ret.result
+
+        if(ret.result.length){
+            const dataArr = ret.result
+            const seqs = dataArr.reduce((acc,cur,idx) =>{
+                const seq = cur.BRD_SEQ;
+                acc.push(seq)
+                if(idx == dataArr.length-1){
+                    return `(${acc.join(',')})` //마지막에 괄호로 묶기
+                }else{
+                    return acc
+                }
+            },[])
+
+            ///TODO 공통화
+            const seqData = {
+                method:"SERVICE",
+                data:{
+                seqs : seqs,
+                 },
+            }
+        
+            util.transaction(seqData,memoQuery.getMemosBySeqs)
+            .then((ret) =>{
+                memos = ret.result
+                ret.result = util.makeTree(posts,memos)
+                res.send(ret)
+            });
+        }
+        else{   //미처리 게시물 없을시
+            res.send(ret)
+        }
+    })
+
+})
+
+.get('/byMonth', (req,res) => {
+
+    if(!getPostByMonthValidator(req)){
+        res.status(400).json('날짜 형식이 맞지 않음')
+        return
+    }
+    util.transaction(req,postQuery.getPostsByMonth)
+    .then((ret) => {
+ 
+        const posts = ret.result
+
+        if(ret.result.length){
+            const dataArr = ret.result
+            const seqs = dataArr.reduce((acc,cur,idx) =>{
+                const seq = cur.BRD_SEQ;
+                acc.push(seq)
+                if(idx == dataArr.length-1){
+                    return `(${acc.join(',')})` //마지막에 괄호로 묶기
+                }else{
+                    return acc
+                }
+            },[])
+
+            ///TODO 공통화
+            const seqData = {
+                method:"SERVICE",
+                data:{
+                seqs : seqs,
+                 },
+            }
+        
+            util.transaction(seqData,memoQuery.getMemosBySeqs)
+            .then((ret) =>{
+                memos = ret.result
+                ret.result = util.makeTree(posts,memos)
+                res.send(ret)
+            });
+        }
+        else{   //미처리 게시물 없을시
+            res.send(ret)
+        }
     })
 
 })
@@ -119,7 +195,7 @@ router
 
 .delete("/:postSeq",async (req,res)=>{
     const { postSeq } = req.params;
-    util.transaction(req,query.removePostQuery)
+    util.transaction(req,postQuery.removePost)
     .then( (ret)=> {
         res.send(ret)
         if(ret.ok == true){
@@ -128,4 +204,29 @@ router
     })
 
 })
+
+
+//validators
+function getPostByMonthValidator(req){
+    if(!req?.query){
+        return false
+    }
+
+    if(!req.query?.fromDate){
+        return false
+    }
+
+    if(!req.query?.toDate){
+        return false
+    }
+
+    if(!util.dateCheckYMD(req.query.fromDate) || !util.dateCheckYMD(req.query.toDate)){
+        return false
+    }
+    
+    return true;
+}
+
+
+
 module.exports = router;

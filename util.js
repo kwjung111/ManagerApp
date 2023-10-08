@@ -32,13 +32,15 @@ const util = {
   //data의 Body, 경로 변수를 Object 형태로 반환
   parseReqBody: (req) => {
     if (req.method == "GET") {
-      return req.params;
+      return {...req.params,...req.query}
     } else if (req.method == "POST") {
       return req.body;
     } else if (req.method == "DELETE") {
       return req.params;
     } else if (req.method == "PATCH") {
       return req.body;
+    } else if (req.method == "SERVICE"){    //서비스 내에서 만든 데이터
+      return req.data;
     }
   },
 
@@ -123,7 +125,10 @@ const util = {
             resolve(buf.toString('base64'));
         });
     }),
-  
+  dateCheckYMD : (date) =>{
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    return dateRegex.test(date)
+  }
 
   
 

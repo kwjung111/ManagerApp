@@ -31,8 +31,7 @@ FROM MEMO memo
 INNER JOIN BRD brd 
  ON 1=1
  AND brd.BRD_SEQ  = memo.BRD_SEQ 
- -- AND brd.BRD_PRGSS_TF = TRUE /* 항상 보이게 변경 */ 
- AND brd.BRD_USE_TF = TRUE
+AND brd.BRD_USE_TF = TRUE
 AND brd.BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
  
 WHERE 1=1 
@@ -44,6 +43,24 @@ WHERE 1=1
     SET MEMO_USE_TF = FALSE
     WHERE 1=1
         AND MEMO_SEQ =${dbc.escape(data.memoSeq)}`
+},
+getMemosBySeqs: function(data){
+    //escape 사용 없음.
+    return `
+    SELECT 
+	MEMO_SEQ,
+	MEMO_WRTR,
+    DATE_FORMAT(MEMO_REG_DTM, '%Y-%m-%d %H:%i:%s') AS MEMO_REG_DTM,
+	MEMO_CTNTS,
+    memo.BRD_SEQ
+FROM MEMO memo
+INNER JOIN BRD brd 
+ ON 1=1
+ AND brd.BRD_SEQ IN ${data.seqs} 
+ AND brd.BRD_SEQ  = memo.BRD_SEQ 
+ AND brd.BRD_USE_TF = TRUE
+ WHERE 1=1
+ -- AND memo.MEMO_USE_TF = TRUE`
 },
 
 }

@@ -131,7 +131,7 @@ router
 
 
 .post("/",(req,res)=>{
-    util.transaction(req,postQuery.addPostQuery)
+    util.transaction(req,postQuery.addPost)
     .then( (ret)=> {
         ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
         res.send(ret)

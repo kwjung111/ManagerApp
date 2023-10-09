@@ -214,7 +214,7 @@ router
       } else {
         req.params.id = decoded.id;
         util.transaction(req, authQuery.signUpCheck).then((ret) => {
-          if (ret.msg == "200") {
+          if (ret.statusCode == 200) {
             res.send("인증 성공! 이제 돌아가서 로그인 해 주세요");
           } else {
             res.send("인증 실패! 토큰이 유효하지 않습니다.");

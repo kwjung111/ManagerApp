@@ -46,8 +46,9 @@ const util = {
 
   transaction: async (req, queries) => {
     let rt = {
-      ok: false,
+      ok: false,  
       msg: "",
+      statusCode : 500,
       result: null,
     };
     let data = util.parseReqBody(req);
@@ -60,11 +61,13 @@ const util = {
       await conn.commit();
       conn.release();
       rt.ok = true;
-      rt.msg = "200";
+      rt.msg = "request success";
+      rt.statusCode = 200;
       rt.result = result;
     } catch (err) {
       console.error(err);
-      rt.msg = "400";
+      rt.msg = "Internal Server Error";
+      rt.statusCode = 500;
       rt.result = err.message;
       if (conn) {
         await conn.rollback();
@@ -78,6 +81,7 @@ const util = {
     let rt = {
       ok: false,
       msg: "",
+      statusCode : 500,
       result: null,
     };
     let data = util.parseReqBody(req);
@@ -104,11 +108,12 @@ const util = {
       await conn.commit();
       conn.release();
       rt.ok = true;
-      rt.msg = "200";
+      rt.msg = "request success";
+      rt.statusCode = "200";
       rt.result = results;
     } catch (err) {
       console.error(err);
-      rt.msg = "400";
+      rt.msg = "Internal Server Error";
       rt.result = err.message;
       if (conn) {
         await conn.rollback();

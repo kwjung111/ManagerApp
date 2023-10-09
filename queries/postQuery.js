@@ -197,7 +197,6 @@ const query = {
             TRUE,
             ${dbc.escape(data.followUpCntns)},
             TRUE,
-            ${dbc.escape(data.writer)},
             ${dbc.escape(data.followUpCd)},
             ${dbc.escape(data.userData.seq)},
             NOW(),

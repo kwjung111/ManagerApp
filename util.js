@@ -2,6 +2,7 @@ const query = require("./queries/query.js");
 const dbcPool = require("./dbconn.js");
 const crypto = require('crypto')
 const { wss } = require("./wss.js");
+const logger = require("./logger.js")
 
 const util = {
   makeTree: (posts, memos) => {
@@ -65,7 +66,7 @@ const util = {
       rt.statusCode = 200;
       rt.result = result;
     } catch (err) {
-      console.error(err);
+      logger.error('Transaction Error',{message:err});
       rt.msg = "Internal Server Error";
       rt.statusCode = 500;
       rt.result = err.message;
@@ -112,7 +113,7 @@ const util = {
       rt.statusCode = "200";
       rt.result = results;
     } catch (err) {
-      console.error(err);
+      logger.error('Transaction Error',{message:err});
       rt.msg = "Internal Server Error";
       rt.result = err.message;
       if (conn) {

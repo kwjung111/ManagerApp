@@ -2,6 +2,8 @@ const express = require("express");
 const compression = require("compression"); //텍스트 압축
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const morganMdw = require("./middlewares/morganMdw")
+const logger = require('./logger.js')
 const { v4:uuidv4} = require("uuid")
 require("dotenv").config();
 const env = process.env.NODE_ENV;
@@ -46,7 +48,11 @@ app.use(
   })
 );
 
+
 app.use(express.json()); //순서 최상위
+
+//로깅
+app.use(morganMdw)
 
 //텍스트 압축 관련 코드
 app.use(compression({ filter: shouldCompress }));
@@ -63,7 +69,7 @@ function shouldCompress(req, res) {
 
 //서버,웹소켓 초기화
 server.listen(port, () => {
-  console.log(`${env} server is listening at localhost:${port}`);
+  logger.info('server Started', {message:`${env} server is listening at localhost:${port}`});
 });
 initWss(server);
 
@@ -99,8 +105,7 @@ function verifyToken(req, res, next) {
 
   jwt.verify(token, process.env.PRV_KEY, (err, decoded) => {
     if (err) {
-      console.log(token);
-      console.log(err);
+      logger.error('tokenVerifyError',{message:`token : ${token} err: ${err}`})
       return res.status(401).json({ message: "Access Token 검증 실패" });
     } else {
       req.body.userData = decoded;

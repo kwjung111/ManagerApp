@@ -1,7 +1,8 @@
 const dbc = require("../dbconn.js");
+const logger = require('../logger.js')
 const authQuery = {
     checkId: function (data) {
-      return `
+      const query =  `
       SELECT 
       MBR_SEQ AS SEQ,
       MBR_ID AS ID,
@@ -10,9 +11,11 @@ const authQuery = {
       MBR_ROLE AS ROLE
       FROM MBR
       WHERE MBR_ID = ${dbc.escape(data.id)}`
+      logger.info('checkId',{message:query})
+      return query
     },
     signUp : function(data){
-        return`
+        const query = `
         INSERT INTO MBR(
             MBR_ID,
             MBR_PWD,
@@ -34,14 +37,18 @@ const authQuery = {
             now(),
             true
         );`
+        logger.info('signUp',{message:query})
+        return query
     },
     signUpCheck : function(data){
-      return`
+      const query = `
       UPDATE MBR SET
         MBR_ROLE = 'USER',
         MBR_MOD_DTM = NOW()
       WHERE MBR_ID = ${dbc.escape(data.id)}
       `
+      logger.info('signUpCheck',{message:query})
+      return query
     }
   };
 

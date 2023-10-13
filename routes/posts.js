@@ -4,7 +4,7 @@ const util = require("../util.js")
 const postQuery = require("../queries/postQuery.js")
 const memoQuery = require("../queries/memoQuery.js")
 const {wsJson,broadcast} = require('../wss.js')
-
+const logger = require("../logger.js")
 
 router
 .get("/",(req,res)=>{
@@ -28,7 +28,7 @@ router
     .then((ret) => {
         let posts = ret.result[0]
         let memos = ret.result[1]
-                
+
         ret.result = util.makeTree(posts,memos)
         res.send(ret)
     })
@@ -135,11 +135,9 @@ router
     .then( (ret)=> {
         ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
         res.send(ret)
-        console.log(ret)
         if(ret.ok == true){
             const event = new wsJson("event")
             .event("POST","posts",ret.result.insertId,req.body.UID,req.body.content)
-            console.log(event)
             broadcast(event)
         }
     })

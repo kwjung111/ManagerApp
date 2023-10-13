@@ -5,6 +5,7 @@ const authQuery = require("../queries/authQuery.js");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const logger = require('../logger.js')
 
 const prvKey = process.env.PRV_KEY;
 
@@ -32,7 +33,7 @@ const mailSender = {
     };
     // 메일 발송
     const result = await mailTransporter.sendMail(mailOptions);
-    console.log(result);
+    logger.info('SignUpMailSend',{message:result})
     return result;
   },
 };
@@ -140,7 +141,7 @@ router
     } else {
       jwt.verify(token, prvKey, (err, decoded) => {
         if (err) {
-          console.log(err);
+          logger.error('chkToken',{message:err});
           (rt.ok = false), (rt.result.code = "02");
           rt.result.status = "err";
           rt.message = "Access Token 검증 실패";
@@ -191,7 +192,7 @@ router
         <a href="${url}/auth/authForSignUp/${token}">인증하기</a>`, // 메일 내용, 현재 url 하드코딩
       });
     } catch (e) {
-      console.log(e);
+      logger.error('sendmailError',{message:e});
       res.send("error")
       return;
     }
@@ -200,7 +201,6 @@ router
 
   .get("/authForSignUp/:token", async (req, res) => {
     let { token } = req.params;
-    console.log(token);
     if (!token) {
       res.send("인증 실패! 토큰이 없습니다.");
       return;
@@ -208,7 +208,7 @@ router
 
     jwt.verify(token, "emailAuth", (err, decoded) => {
       if (err) {
-        console.log(err);
+        logger.error('authForSignUp',{message:err})
         res.send("유효하지 않은 토큰이거나 만료된 토큰입니다.");
         return;
       } else {
@@ -249,7 +249,6 @@ function signUpValidator(req) {
     rt.msg = "null filed exists";
     return rt;
   }
-  console.log(req.body);
   if (req.body?.id.length < 5) {
     rt.ok = false;
     rt.msg = "id not validate";

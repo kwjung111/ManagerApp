@@ -6,6 +6,7 @@ const authQuery = {
       SELECT 
       MBR_SEQ AS SEQ,
       MBR_ID AS ID,
+      MBR_NM AS NAME,
       MBR_PWD AS PWD,
       MBR_SALT AS SALT,
       MBR_ROLE AS ROLE

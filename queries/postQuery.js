@@ -7,6 +7,7 @@ const query = {
         BRD_NO,
         BRD_PRGSS_TF,
         BRD_CTNTS,
+        BRD_IN_CHRG,
         BRD_USE_TF,
         BRD_POST_CD,
         REG_MBR_SEQ,
@@ -20,6 +21,7 @@ const query = {
         ),
         TRUE,
         ${dbc.escape(data.content)},
+        ${dbc.escape(data.inCharge)}
         TRUE,
         ${dbc.escape(data.postCd)},
         ${dbc.escape(data.userData.seq)},
@@ -62,6 +64,7 @@ const query = {
         CONCAT(DATE_FORMAT(brd.BRD_REG_DTM, '%m'),"-",brd.BRD_NO) AS BRD_NO,
 	    brd.BRD_SEQ,
 	    brd.BRD_PRGSS_TF,
+        brd.BRD_IN_CHRG,
 	    brd.BRD_CTNTS,
         DATE_FORMAT(brd.BRD_REG_DTM, '%Y-%m-%d %H:%i:%s') AS BRD_REG_DTM,
         brd.BRD_RSN_PNDNG,
@@ -88,6 +91,7 @@ const query = {
             brd.BRD_POST_CD		     -- 상태코드(긴급여부)
             ,brd.BRD_CTNTS		     -- 내용
             ,mbr.MBR_NM AS WRTR_NM   -- 작성자
+            ,brd.BRD_IN_CHRG         -- 담당자
             ,brd.BRD_PRGSS_TF 	     -- 진행상태 코드
             ,brd.BRD_RSN_PNDNG 	     -- 대기 사유
             ,brd.BRD_END_SYS_TP      -- 종료 - 시스템구분
@@ -109,6 +113,7 @@ const query = {
         CONCAT(DATE_FORMAT(brd.BRD_REG_DTM, '%m'),"-",brd.BRD_NO) AS BRD_NO,
 	    brd.BRD_SEQ,
 	    brd.BRD_PRGSS_TF,
+        brd.BRD_IN_CHRG,
 	    brd.BRD_CTNTS,
 	    mbr.MBR_NM,
 	    DATE_FORMAT(brd.BRD_REG_DTM, '%Y-%m-%d %H:%i:%s') AS BRD_REG_DTM,
@@ -134,8 +139,9 @@ const query = {
         
         return ` 
         UPDATE BRD SET 
-            BRD_POST_CD = ${dbc.escape(data.postCd)}                -- 컬럼의 순서 매우 중요!!
-            ,BRD_CTNTS  = ${dbc.escape(data.cntns)}
+            BRD_POST_CD  = ${dbc.escape(data.postCd)}                -- 컬럼의 순서 매우 중요!!
+            ,BRD_CTNTS   = ${dbc.escape(data.cntns)}
+            ,BRD_IN_CHRG = ${dbc.escape(data.inCharge)}
             ,BRD_ACT_TOT_TIME = CASE -- 진행시간 갱신
                 WHEN BRD_PRGSS_TF = '1' AND ${dbc.escape(data.prgCd)} IN ('0','2') THEN -- 진행중 -> 종료, 대기
                     SEC_TO_TIME(
@@ -157,8 +163,9 @@ const query = {
     clsPost : function(data){
         return `
         UPDATE BRD SET 
-            BRD_POST_CD = ${dbc.escape(data.postCd)}                -- 컬럼의 순서 매우 중요!!
-            ,BRD_CTNTS  = ${dbc.escape(data.cntns)}
+            BRD_POST_CD  = ${dbc.escape(data.postCd)}                -- 컬럼의 순서 매우 중요!!
+            ,BRD_CTNTS   = ${dbc.escape(data.cntns)}
+            ,BRD_IN_CHRG = ${dbc.escape(data.inCharge)}
             ,BRD_ACT_TOT_TIME = CASE -- 진행시간 갱신
                 WHEN BRD_PRGSS_TF = '1' AND ${dbc.escape(data.prgCd)} IN ('0','2') THEN -- 진행중 -> 종료, 대기
                     SEC_TO_TIME(
@@ -183,6 +190,7 @@ const query = {
             BRD_NO,
             BRD_PRGSS_TF,
             BRD_CTNTS,
+            BRD_IN_CHRG,
             BRD_USE_TF,
             BRD_POST_CD,
             REG_MBR_SEQ,
@@ -196,6 +204,7 @@ const query = {
             ),
             TRUE,
             ${dbc.escape(data.followUpCntns)},
+            ${dbc.escape(data.followupInCharge)}
             TRUE,
             ${dbc.escape(data.followUpCd)},
             ${dbc.escape(data.userData.seq)},
@@ -210,6 +219,7 @@ const query = {
                 brd.BRD_SEQ,
                 brd.BRD_PRGSS_TF,
                 brd.BRD_CTNTS,
+                brd.BRD_IN_CHRG,
                 mbr.MBR_NM  AS WRTR_NM,
             DATE_FORMAT(brd.BRD_REG_DTM, '%Y-%m-%d %H:%i:%s') AS BRD_REG_DTM,
             brd.BRD_RSN_PNDNG,

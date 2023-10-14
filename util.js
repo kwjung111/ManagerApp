@@ -1,4 +1,3 @@
-const query = require("./queries/query.js");
 const dbcPool = require("./dbconn.js");
 const crypto = require('crypto')
 const { wss } = require("./wss.js");

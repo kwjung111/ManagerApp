@@ -74,18 +74,20 @@ router
 
         const payload = {
           id: chkRst.ID,
+          name : chkRst.NAME,
           seq: chkRst.SEQ,
           role: chkRst.ROLE,
         };
         const token = jwt.sign(payload, prvKey, { expiresIn: "24h" }); //jwt 토큰 쿠키로 전달
         res.cookie("jwt", token, {
           maxAge: 86400000, //24*60*60*1000, ms 단위
-          //httpOnly:true,
-          //secure:true,
+          //httpOnly:true,  TODO true 처리하기
+          secure:true,
         });
         ret.result = {
           code: "00",
           status: "success",
+          userData: payload
         };
         ret.message = "Auth success";
         res.send(ret);
@@ -178,7 +180,7 @@ router
 
       let url = null;
 
-      if(process.env.NODE_ENV === "DEV"){       //주소 하드코딩
+      if(process.env.NODE_ENV === "DEV"){       //주소 하드코딩 주의!!
         url = "https://localhost:3000"
       }else if(process.env.NODE_ENV === "PRD"){
         url = "https://intra2.tomato-pos.com"   

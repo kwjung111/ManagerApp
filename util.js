@@ -130,11 +130,41 @@ const util = {
             resolve(buf.toString('base64'));
         });
     }),
+  //날짜 유효성 검사
   dateCheckYMD : (date) =>{
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    return dateRegex.test(date)
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  
+  // 정규식과 문자열을 비교하여 유효성 검사
+  if (!regex.test(date)) {
+    return false;
   }
 
+  // 날짜를 파싱하고 유효한 날짜인지 확인
+  let parts = date.split("-");
+  let year = parseInt(parts[0], 10);
+  let month = parseInt(parts[1], 10);
+  let day = parseInt(parts[2], 10);
+
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    return false;
+  }
+
+  if (month === 2) {
+    // 2월인 경우 윤년을 고려하여 날짜 확인
+    if (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) {
+      return day <= 29;
+    } else {
+      return day <= 28;
+    }
+  }
+
+  // 4, 6, 9, 11월은 30일까지 있음
+  if ([4, 6, 9, 11].includes(month)) {
+    return day <= 30;
+  }
+
+  return true;
+}
   
 
 };

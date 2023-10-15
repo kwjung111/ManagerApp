@@ -1,9 +1,10 @@
 const dbc = require('../dbconn.js')
+const logger = require('../logger.js')
 
 const query = {
     // 게시물 등록
     addPost : function(data){
-    return`INSERT INTO BRD (
+    const query = `INSERT INTO BRD (
         BRD_NO,
         BRD_PRGSS_TF,
         BRD_CTNTS,
@@ -21,13 +22,14 @@ const query = {
         ),
         TRUE,
         ${dbc.escape(data.content)},
-        ${dbc.escape(data.inCharge)}
+        ${dbc.escape(data.inCharge)},
         TRUE,
         ${dbc.escape(data.postCd)},
         ${dbc.escape(data.userData.seq)},
         NOW(),
-        NOW()
-    )`},
+        NOW())`
+    logger.info("addPostQuery",{message:query})
+    return query},
 
     // 게시물 논리적 삭제
     removePost : function(data){
@@ -204,7 +206,7 @@ const query = {
             ),
             TRUE,
             ${dbc.escape(data.followUpCntns)},
-            ${dbc.escape(data.followupInCharge)}
+            ${dbc.escape(data.followupInCharge)},
             TRUE,
             ${dbc.escape(data.followUpCd)},
             ${dbc.escape(data.userData.seq)},

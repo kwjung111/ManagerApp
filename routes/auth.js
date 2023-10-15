@@ -5,7 +5,8 @@ const authQuery = require("../queries/authQuery.js");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
-const logger = require('../logger.js')
+const logger = require('../logger.js');
+const { strict } = require("assert");
 
 const prvKey = process.env.PRV_KEY;
 
@@ -82,6 +83,7 @@ router
         res.cookie("jwt", token, {
           maxAge: 86400000, //24*60*60*1000, ms 단위
           //httpOnly:true,  TODO true 처리하기
+          sameSite:'lax',
           secure:true,
         });
         ret.result = {

@@ -3,6 +3,7 @@ const router = express.Router();
 const util = require("../util.js")
 const scheduleQuery = require("../queries/scheduleQuery.js")
 const meetingQuery = require("../queries/meetingQuery.js")
+const projectQuery = require("../queries/projectQuery")
 const jwt = require("jsonwebtoken");
 const { wsJson } = require("../wss.js");
 const prvKey = process.env.PRV_KEY;
@@ -20,7 +21,12 @@ router
     // const { schdSeq } = req.params;
     const { schdTp } = req.params;
     if(schdTp == 0) { // 미팅
-        util.transaction(req, meetingQuery.getSchd)
+        util.transaction(req, meetingQuery.getMtng)
+        .then((ret) => {
+            res.send(ret)
+        })
+    } else if (schdTp == 1) {   // 프로젝트
+        util.transaction(req, projectQuery.getPrj)
         .then((ret) => {
             res.send(ret)
         })
@@ -47,7 +53,7 @@ router
     // 스케줄 등록
     const { schdTp } = req.params;
     if(schdTp == 0) {       // 미팅
-        util.transaction(req, meetingQuery.addShcd)
+        util.transaction(req, meetingQuery.addMtng)
         .then((ret) => {
             ret.result.postSeq = ret.result.insertId
             res.send(ret)

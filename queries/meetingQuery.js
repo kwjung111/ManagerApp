@@ -3,7 +3,7 @@ const logger = require('../logger.js')
 
 const meetingQuery = {
     // 미팅 등록
-    addShcd : function(data) {
+    addMtng : function(data) {
         const query = `
             INSERT INTO MTNG ( MTNG_NO
                              , MTNG_PIN_YN
@@ -46,7 +46,7 @@ const meetingQuery = {
     },
 
     // 스케줄(미팅) 상세 조회
-    getSchd : function(data) {
+    getMtng : function(data) {
         return `
         SELECT 
             M.MTNG_SEQ              AS SCHD_SEQ

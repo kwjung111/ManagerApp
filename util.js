@@ -32,7 +32,7 @@ const util = {
   //data의 Body, 경로 변수를 Object 형태로 반환
   parseReqBody: (req) => {
     if (req.method == "GET") {
-      return {...req.params,...req.query}
+      return {...req.params,...req.query, ...req.body}
     } else if (req.method == "POST") {
       return req.body;
     } else if (req.method == "DELETE") {

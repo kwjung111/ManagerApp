@@ -16,18 +16,16 @@ router
     })
 })
 
-// .get('/:schdTp/:schdSeq',(req,res) => {
-//     // const { schdSeq } = req.params;
-//     const { schdTp } = req.params;
-//     if(schdTp == 0) { // 미팅
-//         console.log("뿅")
-//         util.transaction(req, meetingQuery.getSchd)
-//         .then((ret) => {
-//             console.log(ret)
-//             res.send(ret)
-//         })
-//     }
-// })
+.get('/:schdTp/:schdSeq',(req,res) => {
+    // const { schdSeq } = req.params;
+    const { schdTp } = req.params;
+    if(schdTp == 0) { // 미팅
+        util.transaction(req, meetingQuery.getSchd)
+        .then((ret) => {
+            res.send(ret)
+        })
+    }
+})
 
 .get("/count", (req, res) => {
     // 개인 스케줄 - 왼쪽 화면 카운트
@@ -51,7 +49,6 @@ router
     if(schdTp == 0) {       // 미팅
         util.transaction(req, meetingQuery.addShcd)
         .then((ret) => {
-            console.log(ret)
             ret.result.postSeq = ret.result.insertId
             res.send(ret)
         })

@@ -1,5 +1,6 @@
 /.env
+/.env.production
+/logs
 /dist
-/client
-
+/certs
 /node_modules

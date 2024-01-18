@@ -1,6 +1,7 @@
-const query = require("./queries/query.js");
 const dbcPool = require("./dbconn.js");
+const crypto = require('crypto')
 const { wss } = require("./wss.js");
+const logger = require("./logger.js")
 
 const util = {
   makeTree: (posts, memos) => {
@@ -17,6 +18,7 @@ const util = {
     }, []);
   },
 
+  //Todo 배열의 경우 처리 못함, 순환 참조 처리 불가
   deepCopy: (obj) => {
     if (obj === null || typeof obj !== "object") return obj;
 
@@ -29,22 +31,24 @@ const util = {
 
   //data의 Body, 경로 변수를 Object 형태로 반환
   parseReqBody: (req) => {
-    let data = {};
     if (req.method == "GET") {
-      return req.params;
+      return {...req.params,...req.query}
     } else if (req.method == "POST") {
       return req.body;
     } else if (req.method == "DELETE") {
       return req.params;
     } else if (req.method == "PATCH") {
       return req.body;
+    } else if (req.method == "SERVICE"){    //서비스 내에서 만든 데이터
+      return req.data;
     }
   },
 
   transaction: async (req, queries) => {
     let rt = {
-      ok: false,
+      ok: false,  
       msg: "",
+      statusCode : 500,
       result: null,
     };
     let data = util.parseReqBody(req);
@@ -54,13 +58,16 @@ const util = {
       await conn.beginTransaction();
 
       const [result] = await conn.query(queries(data));
-      rt.ok = true;
-      (rt.msg = "200"), (rt.result = result);
       await conn.commit();
       conn.release();
+      rt.ok = true;
+      rt.msg = "request success";
+      rt.statusCode = 200;
+      rt.result = result;
     } catch (err) {
-      console.error(err);
-      rt.msg = "400";
+      logger.error('Transaction Error',{message:err});
+      rt.msg = "Internal Server Error";
+      rt.statusCode = 500;
       rt.result = err.message;
       if (conn) {
         await conn.rollback();
@@ -74,6 +81,7 @@ const util = {
     let rt = {
       ok: false,
       msg: "",
+      statusCode : 500,
       result: null,
     };
     let data = util.parseReqBody(req);
@@ -97,14 +105,15 @@ const util = {
           results.push(result);
         }
       }
-      rt.ok = true;
-      rt.msg = "200";
-      rt.result = results;
       await conn.commit();
       conn.release();
+      rt.ok = true;
+      rt.msg = "request success";
+      rt.statusCode = "200";
+      rt.result = results;
     } catch (err) {
-      console.error(err);
-      rt.msg = "400";
+      logger.error('Transaction Error',{message:err});
+      rt.msg = "Internal Server Error";
       rt.result = err.message;
       if (conn) {
         await conn.rollback();
@@ -113,6 +122,51 @@ const util = {
     }
     return rt;
   },
+  //salt 생성하는 비동기 함수
+  createSalt: () =>
+    new Promise((resolve, reject) => {
+        crypto.randomBytes(64, (err, buf) => {
+            if (err) reject(err);
+            resolve(buf.toString('base64'));
+        });
+    }),
+  //날짜 유효성 검사
+  dateCheckYMD : (date) =>{
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  
+  // 정규식과 문자열을 비교하여 유효성 검사
+  if (!regex.test(date)) {
+    return false;
+  }
+
+  // 날짜를 파싱하고 유효한 날짜인지 확인
+  let parts = date.split("-");
+  let year = parseInt(parts[0], 10);
+  let month = parseInt(parts[1], 10);
+  let day = parseInt(parts[2], 10);
+
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    return false;
+  }
+
+  if (month === 2) {
+    // 2월인 경우 윤년을 고려하여 날짜 확인
+    if (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) {
+      return day <= 29;
+    } else {
+      return day <= 28;
+    }
+  }
+
+  // 4, 6, 9, 11월은 30일까지 있음
+  if ([4, 6, 9, 11].includes(month)) {
+    return day <= 30;
+  }
+
+  return true;
+}
+  
+
 };
 
 module.exports = util;

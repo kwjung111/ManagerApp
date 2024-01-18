@@ -9,4 +9,4 @@ RUN npm install && \
 
 EXPOSE 3000
 
-CMD ["/usr/local/bin/node", "server.js"]
+CMD ["npm", "run" ,"start"]

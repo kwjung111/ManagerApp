@@ -1,15 +1,17 @@
 const dbc = require('../dbconn.js')
+const logger = require('../logger.js')
 
 const query = {
     // 게시물 등록
     addPost : function(data){
-    return`INSERT INTO BRD (
+    const query = `INSERT INTO BRD (
         BRD_NO,
         BRD_PRGSS_TF,
         BRD_CTNTS,
+        BRD_IN_CHRG,
         BRD_USE_TF,
-        BRD_WRTR,
         BRD_POST_CD,
+        REG_MBR_SEQ,
         BRD_ACT_STRT_DTM,
         BRD_REG_DTM
         )VALUES(
@@ -20,12 +22,14 @@ const query = {
         ),
         TRUE,
         ${dbc.escape(data.content)},
+        ${dbc.escape(data.inCharge)},
         TRUE,
-        ${dbc.escape(data.writer)},
         ${dbc.escape(data.postCd)},
+        ${dbc.escape(data.userData.seq)},
         NOW(),
-        NOW()
-    )`},
+        NOW())`
+    logger.info("addPostQuery",{message:query})
+    return query},
 
     // 게시물 논리적 삭제
     removePost : function(data){
@@ -55,30 +59,32 @@ const query = {
         WHERE BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
         `
     },
-
     //게시물 내용 조회
-    getPosts : function(){
+    getPosts : function(data){
         return `
-    SELECT 
-        CONCAT(DATE_FORMAT(BRD_REG_DTM, '%m'),"-",BRD_NO) AS BRD_NO,
-	    BRD_SEQ,
-	    BRD_PRGSS_TF,
-	    BRD_CTNTS,
-	    BRD_WRTR,
-	    BRD_REG_DTM,
-	    CASE WHEN BRD_PRGSS_TF = '1' THEN
+        SELECT 
+        CONCAT(DATE_FORMAT(brd.BRD_REG_DTM, '%m'),"-",brd.BRD_NO) AS BRD_NO,
+	    brd.BRD_SEQ,
+	    brd.BRD_PRGSS_TF,
+        brd.BRD_IN_CHRG,
+	    brd.BRD_CTNTS,
+        DATE_FORMAT(brd.BRD_REG_DTM, '%Y-%m-%d %H:%i:%s') AS BRD_REG_DTM,
+        brd.BRD_RSN_PNDNG,
+        mbr.MBR_NM as WRTR_NM,
+	    CASE WHEN brd.BRD_PRGSS_TF = '1' THEN
             SEC_TO_TIME(
-                TIME_TO_SEC(TIMEDIFF(NOW(),IFNULL(BRD_ACT_STRT_DTM,BRD_REG_DTM))) +
-                TIME_TO_SEC(IFNULL(BRD_ACT_TOT_TIME,TIME(0))))
-		    WHEN BRD_PRGSS_TF IN (0,2) THEN 
-                IFNULL(BRD_ACT_TOT_TIME,'00:00:00')  END AS BRD_ELAPSED_TIME,
-        BRD_POST_CD
-    FROM BRD
-
+                TIME_TO_SEC(TIMEDIFF(NOW(),IFNULL(brd.BRD_ACT_STRT_DTM,brd.BRD_REG_DTM))) +
+                TIME_TO_SEC(IFNULL(brd.BRD_ACT_TOT_TIME,TIME(0))))
+		    WHEN brd.BRD_PRGSS_TF IN (0,2) THEN 
+                IFNULL(brd.BRD_ACT_TOT_TIME,'00:00:00')  END AS BRD_ELAPSED_TIME,
+        brd.BRD_POST_CD
+    FROM BRD brd
+    INNER JOIN MBR mbr
+     ON mbr.MBR_SEQ  = brd.REG_MBR_SEQ  
     WHERE 1=1 
-	    AND BRD_USE_TF = TRUE
-        AND BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
-	ORDER BY BRD_SEQ DESC;`
+	    AND brd.BRD_USE_TF = TRUE
+        AND brd.BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
+	ORDER BY brd.BRD_SEQ DESC;`
     },
     //게시물 상세 조회
     getPost: function(data){
@@ -86,28 +92,58 @@ const query = {
         SELECT 
             brd.BRD_POST_CD		     -- 상태코드(긴급여부)
             ,brd.BRD_CTNTS		     -- 내용
-            ,brd.BRD_WRTR     	     -- 작성자
+            ,mbr.MBR_NM AS WRTR_NM   -- 작성자
+            ,brd.BRD_IN_CHRG         -- 담당자
             ,brd.BRD_PRGSS_TF 	     -- 진행상태 코드
             ,brd.BRD_RSN_PNDNG 	     -- 대기 사유
             ,brd.BRD_END_SYS_TP      -- 종료 - 시스템구분
-            ,brd.BRD_END_CTG          -- 종료 - SR유형/에러
-            ,brd.BRD_END_CTG_DTL      -- 종료 - 유형 상세
+            ,brd.BRD_END_CTG         -- 종료 - SR유형/에러
+            ,brd.BRD_END_CTG_DTL     -- 종료 - 유형 상세
             ,brd2.BRD_NO  AS FOLLOWUP_POST_BRD_NO 			 -- 종료 - 후속조치 게시물번호
         FROM BRD brd
+        INNER JOIN MBR mbr
+           on mbr.MBR_SEQ = brd.REG_MBR_SEQ
         LEFT OUTER JOIN BRD brd2
             ON brd2.BRD_SEQ = brd.BRD_END_FLLW_UP_SEQ
             AND brd2.BRD_USE_TF = TRUE
         WHERE brd.BRD_SEQ = ${dbc.escape(data.postSeq)};`
     },
-    
+    //미처리 건 
+    getNotFinPosts: function(data){
+        return`
+        SELECT 
+        CONCAT(DATE_FORMAT(brd.BRD_REG_DTM, '%m'),"-",brd.BRD_NO) AS BRD_NO,
+	    brd.BRD_SEQ,
+	    brd.BRD_PRGSS_TF,
+        brd.BRD_IN_CHRG,
+	    brd.BRD_CTNTS,
+	    mbr.MBR_NM,
+	    DATE_FORMAT(brd.BRD_REG_DTM, '%Y-%m-%d %H:%i:%s') AS BRD_REG_DTM,
+        brd.BRD_RSN_PNDNG,
+	    CASE WHEN brd.BRD_PRGSS_TF = '1' THEN
+            SEC_TO_TIME(
+                TIME_TO_SEC(TIMEDIFF(NOW(),IFNULL(brd.BRD_ACT_STRT_DTM,brd.BRD_REG_DTM))) +
+                TIME_TO_SEC(IFNULL(brd.BRD_ACT_TOT_TIME,TIME(0))))
+		    WHEN brd.BRD_PRGSS_TF IN (0,2) THEN 
+                IFNULL(brd.BRD_ACT_TOT_TIME,'00:00:00')  END AS BRD_ELAPSED_TIME,
+        brd.BRD_POST_CD
+    FROM BRD brd
+    INNER JOIN MBR mbr
+    	ON mbr.MBR_SEQ = brd.REG_MBR_SEQ 
+    WHERE 1=1
+	    AND BRD_USE_TF = TRUE
+        AND BRD_PRGSS_TF IN (1,2)
+        AND BRD_REG_DTM NOT BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
+	ORDER BY BRD_SEQ DESC;`
+    },
     //게시물 수정
     chgPost : function(data){
         
         return ` 
         UPDATE BRD SET 
-            BRD_POST_CD = ${dbc.escape(data.postCd)}                -- 컬럼의 순서 매우 중요!!
-            ,BRD_CTNTS  = ${dbc.escape(data.cntns)}
-            ,BRD_WRTR = ${dbc.escape(data.writer)}
+            BRD_POST_CD  = ${dbc.escape(data.postCd)}                -- 컬럼의 순서 매우 중요!!
+            ,BRD_CTNTS   = ${dbc.escape(data.cntns)}
+            ,BRD_IN_CHRG = ${dbc.escape(data.inCharge)}
             ,BRD_ACT_TOT_TIME = CASE -- 진행시간 갱신
                 WHEN BRD_PRGSS_TF = '1' AND ${dbc.escape(data.prgCd)} IN ('0','2') THEN -- 진행중 -> 종료, 대기
                     SEC_TO_TIME(
@@ -129,9 +165,9 @@ const query = {
     clsPost : function(data){
         return `
         UPDATE BRD SET 
-            BRD_POST_CD = ${dbc.escape(data.postCd)}                -- 컬럼의 순서 매우 중요!!
-            ,BRD_CTNTS  = ${dbc.escape(data.cntns)}
-            ,BRD_WRTR = ${dbc.escape(data.writer)}
+            BRD_POST_CD  = ${dbc.escape(data.postCd)}                -- 컬럼의 순서 매우 중요!!
+            ,BRD_CTNTS   = ${dbc.escape(data.cntns)}
+            ,BRD_IN_CHRG = ${dbc.escape(data.inCharge)}
             ,BRD_ACT_TOT_TIME = CASE -- 진행시간 갱신
                 WHEN BRD_PRGSS_TF = '1' AND ${dbc.escape(data.prgCd)} IN ('0','2') THEN -- 진행중 -> 종료, 대기
                     SEC_TO_TIME(
@@ -146,7 +182,7 @@ const query = {
             ,BRD_END_SYS_TP = ${dbc.escape(data.sysTp)}
             ,BRD_END_CTG = ${dbc.escape(data.postCtg)}
             ,BRD_END_CTG_DTL = ${dbc.escape(data.postCtgDtl)}
-            ,BRD_END_FLLW_UP_SEQ = ${dbc.escape(data?.addFollowUpPost?.insertId)} 
+            ,BRD_END_FLLW_UP_SEQ = IFNULL(${dbc.escape(data?.addFollowUpPost?.insertId)} ,BRD_END_FLLW_UP_SEQ)
             ,BRD_MOD_DTM = NOW()
         WHERE BRD_SEQ  = ${dbc.escape(data.postSeq)};`
     },
@@ -156,9 +192,10 @@ const query = {
             BRD_NO,
             BRD_PRGSS_TF,
             BRD_CTNTS,
+            BRD_IN_CHRG,
             BRD_USE_TF,
-            BRD_WRTR,
             BRD_POST_CD,
+            REG_MBR_SEQ,
             BRD_ACT_STRT_DTM,
             BRD_REG_DTM
             )VALUES(
@@ -169,12 +206,38 @@ const query = {
             ),
             TRUE,
             ${dbc.escape(data.followUpCntns)},
+            ${dbc.escape(data.followupInCharge)},
             TRUE,
-            ${dbc.escape(data.writer)},
             ${dbc.escape(data.followUpCd)},
+            ${dbc.escape(data.userData.seq)},
             NOW(),
             NOW()
         )`},
+        // 완료된 게시물( 달 기준으로 조회)
+        getPostsByMonth: function(data){
+            const query = `
+            SELECT
+            CONCAT(DATE_FORMAT(brd.BRD_REG_DTM, '%m'),"-",brd.BRD_NO) AS BRD_NO,
+                brd.BRD_SEQ,
+                brd.BRD_PRGSS_TF,
+                brd.BRD_CTNTS,
+                brd.BRD_IN_CHRG,
+                mbr.MBR_NM  AS WRTR_NM,
+            DATE_FORMAT(brd.BRD_REG_DTM, '%Y-%m-%d %H:%i:%s') AS BRD_REG_DTM,
+            brd.BRD_RSN_PNDNG,
+            IFNULL(brd.BRD_ACT_TOT_TIME,'00:00:00')  AS BRD_ELAPSED_TIME,
+            brd.BRD_POST_CD
+        FROM BRD brd
+        INNER JOIN MBR mbr
+           ON mbr.MBR_SEQ  = brd.REG_MBR_SEQ 
+        WHERE 1=1
+            AND brd.BRD_PRGSS_TF = '0'
+            AND brd.BRD_USE_TF = TRUE
+	        AND brd.BRD_REG_DTM >= '${data.fromDate}'
+            AND DATE_FORMAT(BRD_REG_DTM, '%Y-%m-%d') <= '${data.toDate}'
+		ORDER BY BRD_SEQ DESC  `
+            return query
+        }
 }
 
 

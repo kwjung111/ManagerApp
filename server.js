@@ -1,132 +1,117 @@
-const express = require('express');
-const session = require('express-session')
-const cors = require('cors')
+const express = require("express");
+const compression = require("compression"); //텍스트 압축
+const jwt = require("jsonwebtoken");
+const cors = require("cors");
+const morganMdw = require("./middlewares/morganMdw")
+const logger = require('./logger.js')
+const { v4:uuidv4} = require("uuid")
 require("dotenv").config();
-const http = require('http')
-const {wss,wsJson,initWss,broadcast} = require('./wss.js')
+const env = process.env.NODE_ENV;
+const http = require("http");
+const { initWss } = require("./wss.js");
 
-const { v4:uuidv4} = require('uuid')
-const query = require('./queries/query.js')
-const util = require('./util.js')
-
-const path=require('path')
+const path = require("path");
 const app = express();
-const server = http.createServer(app);
+
+//개발계 https 사용을 위한 설정
+let server;
+if (env == "DEV") {
+  const fs = require("fs");
+  const https = require("https");
+
+  const httpsOptions = {
+    key: fs.readFileSync("./certs/localhost-key.pem"),
+    cert: fs.readFileSync("./certs/localhost.pem"),
+  };
+  server = https.createServer(httpsOptions, app);
+} else if (env == "PRD") {
+  server = http.createServer(app);
+}
+
 const port = process.env.PORT || 3000;
 
 //router
-const postsRouter = require('./routes/posts.js')
-const memosRouter = require('./routes/memos.js')
-const sessionRouter = require('./routes/session.js')
-const cmmnRouter = require('./routes/cmmn.js')
+const postsRouter = require("./routes/posts.js");
+const memosRouter = require("./routes/memos.js");
+const cmmnRouter = require("./routes/cmmn.js");
+const authRouter = require("./routes/auth.js");
+const projectsRouter = require("./routes/projects.js");
+const scheduleRouter = require("./routes/schedule.js");
+
+//정적 리소스 라우팅
+app.use(express.static(path.resolve(__dirname, "dist")));
 
 //CORS 허용
-app.use(cors())
-app.use(express.json()) 
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 
-//TODO 세션 작성
-/*
-app.use(session({
-    secret:'kwjung',
-    resave:false,
-    saveUninitialized:true,
-    cookie: {
-        secure : true,
-        maxAge : 600000,     //10분   
-    }
-}))
-*/
+app.use(express.json()); //순서 최상위
 
+//로깅
+app.use(morganMdw)
+
+//텍스트 압축 관련 코드
+app.use(compression({ filter: shouldCompress }));
+
+function shouldCompress(req, res) {
+  if (req.headers["x-no-compression"]) {
+    // don't compress responses with this request header
+    return false;
+  }
+
+  // fallback to standard filter function
+  return compression.filter(req, res);
+}
 
 //서버,웹소켓 초기화
-server.listen(port, ()=>{
-    console.log(`server is listening at localhost:${port}`);
+server.listen(port, () => {
+  logger.info('server Started', {message:`${env} server is listening at localhost:${port}`});
 });
 initWss(server);
 
-//정적 리소스 라우팅
-app.use(express.static(path.resolve(__dirname, 'dist')));
-app.use('/srList', express.static(path.join(__dirname, 'dist')));
+//권한 필요없는 요청
+if (env == "DEV") {
+  const testRouter = require("./routes/test.js");
+  app.use("/test", testRouter);
+}
+  app.use("/auth", authRouter);
+app.use(verifyToken);
 
-//라우터
-
-app.use('/posts',postsRouter)
-app.use('/memos',memosRouter)
-app.use('/session',sessionRouter)
-app.use('/cmmn',cmmnRouter)
-
-app.get("/postsCount",(req,res)=>{
-    util.transaction(req,query.getPostsCount)
-    .then( (ret)=> {
-        res.send(ret)
-        console.log(ret)
-    })
-})
+//권한 필요한 요청
+app.use("/posts", postsRouter);
+app.use("/memos", memosRouter);
+app.use("/cmmn", cmmnRouter);
+app.use("/projects", projectsRouter);
+app.use("/schedule", scheduleRouter);
 
 
-//TODO 리팩토링
-app.get('/postTree',async (req,res) =>{
-
-    let rt = {
-        ok : false,
-        msg : '',
-        result : null
-    }
-
-    util.transactions(req,[query.getPosts,query.getMemos],true)
-    .then((ret) => {
-        let posts = ret.result[0]
-        let memos = ret.result[1]
-                
-        rt.ok = true
-        rt.msg = 200
-        rt.result = util.makeTree(posts,memos)
-        res.send(rt)
-    })
-})
-
-
-
-
-//TODO 세션 구현시 삭제
-
+//TODO uuid -> jwt 기반으로 리팩토링하기
 app.get('/identifier',(req,res)=>{
-    const uniqueKey = uuidv4();
-    res.send(uniqueKey);
+  const uniqueKey = uuidv4();
+  res.send(uniqueKey);
 })
 
+//미들웨어 Access Token 검증 코드
 
-//웹푸시 코드
-/*
-const webPush = require('web-push')
-const bodyParser = require('body-parser')
+function verifyToken(req, res, next) {
+  const token = req.headers.authorization;
 
-webPush.setVapidDetails(
-    'mailto:kwjung@businessinsignt.co.kr'
-    ,process.env.VAPID_PUB
-    ,process.env.VAPID_PRV)
+  if (!token) {
+    return res.status(403).json({ message: "토큰 없음" });
+  }
 
-
-let subscriptions = []  
-
- 웹 푸시 코드
-webPush.sendNotification(
-    subscription,
-    JSON.stringify({
-        title: 'Web Push | Getting Started',
-        body: message || '(Empty message)',
-      }));
-      */
-
-//sse 코드
-/*
-app.get('/events', (req, res) => {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    
-    setInterval(() => {
-      res.write(`data: ${new Date().toLocaleTimeString()}\n\n`);
-    }, 1000);
+  jwt.verify(token, process.env.PRV_KEY, (err, decoded) => {
+    if (err) {
+      logger.error('tokenVerifyError',{message:`token : ${token} err: ${err}`})
+      return res.status(401).json({ message: "Access Token 검증 실패" });
+    } else {
+      req.body.userData = decoded;
+      next();
+    }
   });
-  */
+}
+

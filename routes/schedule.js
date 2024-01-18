@@ -3,7 +3,8 @@ const router = express.Router();
 const util = require("../util.js")
 const scheduleQuery = require("../queries/scheduleQuery.js")
 const meetingQuery = require("../queries/meetingQuery.js")
-const projectQuery = require("../queries/projectQuery")
+const projectQuery = require("../queries/projectQuery.js")
+const stepQuery = require("../queries/stepQuery.js")
 const jwt = require("jsonwebtoken");
 const { wsJson } = require("../wss.js");
 const prvKey = process.env.PRV_KEY;
@@ -55,9 +56,29 @@ router
     if(schdTp == 0) {       // 미팅
         util.transaction(req, meetingQuery.addMtng)
         .then((ret) => {
-            ret.result.postSeq = ret.result.insertId
+            ret.result.schdSeq = ret.result.insertId
+            ret.result.schdTp = 0
             res.send(ret)
         })
+    } else if (schdTp == 1) {       // 프로젝트
+        let steps = req.body.SCHD_STEPS
+        let tmp = req;
+        // 프로젝트  insert
+        util.transaction(req, projectQuery.addPrj)
+            .then((ret) => {
+                ret.result.schdSeq = ret.result.insertId
+                ret.result.schdTp = 1
+                for(let i = 0; i < steps.length; i++){
+                    tmp.body = steps[i]
+                    tmp.body.userData = findSeqAndName(req.headers.authorization)
+                    tmp.body.PRJ_SEQ = ret.result.insertId
+                    util.transaction(tmp, stepQuery.addStep)
+                        .then((ret) => {
+                            console.log(ret)
+                        })
+                }
+                res.send(ret)
+            })
     }
 })
 

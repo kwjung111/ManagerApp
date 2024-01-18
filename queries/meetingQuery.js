@@ -16,10 +16,10 @@ const meetingQuery = {
                              , MTNG_REG_DTM
                              , MTNG_REG_MBR_SEQ
                              , MTNG_USE_TF)
-            VALUES ( (SELECT COUNT(0) + 1 AS MTNG_NO
+            VALUES ( (SELECT MAX(SCHD_NO) + 1 AS MTNG_NO
                       FROM (SELECT '0'              AS SCHD_TP
                                  , MTNG_SEQ         AS SCHD_SEQ
-                                 , MTNG_NO          AS SCHG_NO
+                                 , MTNG_NO          AS SCHD_NO
                                  , MTNG_REG_MBR_SEQ AS SCHD_REG_MBR_SEQ
                             FROM MTNG
                             WHERE MTNG_REG_MBR_SEQ = ${dbc.escape(data.userData.seq)}
@@ -29,7 +29,8 @@ const meetingQuery = {
                                  , PRJ_NO          AS SCHD_NO
                                  , PRJ_REG_MBR_SEQ AS SCHD_REG_MBR_SEQ
                             FROM PRJ
-                            WHERE PRJ_REG_MBR_SEQ = ${dbc.escape(data.userData.seq)}) A)
+                            WHERE PRJ_REG_MBR_SEQ = ${dbc.escape(data.userData.seq)})
+                          A)
                    , ${dbc.escape(data.SCHD_PIN_YN)}
                    , ${dbc.escape(data.SCHD_PRTC)}
                    , ${dbc.escape(data.SCHD_PRGSS_CD)}

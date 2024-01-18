@@ -135,6 +135,52 @@ const query = {
           AND P.PRJ_USE_TF = 1
           AND P.PRJ_SEQ = '${data.schdSeq}'
         `
+    },
+
+    addPrj : function(data) {
+        const query = `
+        INSERT INTO PRJ ( PRJ_NO
+                        , PRJ_PIN_YN
+                        , PRJ_PRTC
+                        , PRJ_PRGSS_CD
+                        , PRJ_PRGSS_PRCNT
+                        , PRJ_STRT_DTM
+                        , PRJ_END_DTM
+                        , PRJ_TOT_TIME
+                        , PRJ_CNTNTS
+                        , PRJ_REG_DTM
+                        , PRJ_REG_MBR_SEQ
+                        , PRJ_USE_TF
+        ) VALUES ( (SELECT MAX(SCHD_NO) + 1 AS PRJ_NO
+                    FROM (SELECT '0'        AS SCHD_TP
+                               , MTNG_SEQ   AS SCHD_SEQ
+                               , MTNG_NO          AS SCHD_NO
+                               , MTNG_REG_MBR_SEQ AS SCHD_REG_MBR_SEQ
+                          FROM MTNG
+                          WHERE MTNG_REG_MBR_SEQ = ${dbc.escape(data.userData.seq)}
+                          UNION ALL
+                          SELECT '1'             AS SCHD_TP
+                               , PRJ_SEQ         AS SCHD_SEQ
+                               , PRJ_NO          AS SCHD_NO
+                               , PRJ_REG_MBR_SEQ AS SCHD_REG_MBR_SEQ
+                          FROM PRJ
+                          WHERE PRJ_REG_MBR_SEQ = ${dbc.escape(data.userData.seq)})
+                             A)
+                  , ${dbc.escape(data.SCHD_PIN_YN)}
+                  , ${dbc.escape(data.SCHD_PRTC)}
+                  , ${dbc.escape(data.SCHD_PRGSS_CD)}
+                  , ${dbc.escape(data.SCHD_PRGSS_PRCNT)}
+                  , DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s')
+                  , DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s')
+                  , 0
+                  , ${dbc.escape(data.SCHD_CNTNTS)}
+                  , DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
+                  , ${dbc.escape(data.userData.seq)}
+                  , 1
+        )
+        `
+        logger.info("addPrjQuery", {message: query})
+        return query
     }
 };
 

@@ -36,7 +36,7 @@ const meetingQuery = {
                    , ${dbc.escape(data.SCHD_PRGSS_CD)}
                    , DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s')
                    , DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s')
-                   , ''
+                   , TIMEDIFF(DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s'))
                    , ${dbc.escape(data.SCHD_CNTNTS)}
                    , DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
                    , ${dbc.escape(data.userData.seq)}

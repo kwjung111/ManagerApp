@@ -172,7 +172,7 @@ const query = {
                   , ${dbc.escape(data.SCHD_PRGSS_PRCNT)}
                   , DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_STRT_DTM)},' 00:00:00'), '%Y-%m-%d %H:%i:%s')
                   , DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_END_DTM)}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
-                  , 0
+                  , DATEDIFF(DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_END_DTM)}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_STRT_DTM)},' 00:00:00'), '%Y-%m-%d %H:%i:%s'))+1
                   , ${dbc.escape(data.SCHD_CNTNTS)}
                   , DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
                   , ${dbc.escape(data.userData.seq)}
@@ -192,7 +192,7 @@ const query = {
              , PRJ_PRGSS_PRCNT = ${dbc.escape(data.SCHD_PRGSS_PRCNT)}
              , PRJ_STRT_DTM = DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_STRT_DTM)},' 00:00:00'), '%Y-%m-%d %H:%i:%s')
              , PRJ_END_DTM = DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_END_DTM)}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
-             , PRJ_TOT_TIME = DATEDIFF(DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s'))
+             , PRJ_TOT_TIME = DATEDIFF(DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s'))+1
              , PRJ_CNTNTS = ${dbc.escape(data.SCHD_CNTNTS)}
              , PRJ_MOD_DTM = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
              , PRJ_MOD_MBR_SEQ = ${dbc.escape(data.userData.seq)}

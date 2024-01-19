@@ -16,7 +16,7 @@ const stepQuery = {
           , STEP_REG_MBR_SEQ
           , STEP_USE_TF
         ) VALUES (
-            ${dbc.escape(data.PRJ_SEQ)}
+            ${dbc.escape(data.SCHD_SEQ)}
           , ${dbc.escape(data.STEP_NM)}
           , DATE_FORMAT(${dbc.escape(data.STEP_STRT_DTM)}, '%Y-%m-%d %H:%i:%s')
           , DATE_FORMAT(${dbc.escape(data.STEP_END_DTM)}, '%Y-%m-%d %H:%i:%s')
@@ -34,6 +34,21 @@ const stepQuery = {
     getStep : function (data) {
         return `
         
+        `
+    },
+    
+    // 프로젝트 - 단계 수정
+    chgStep : function(data) {
+        return `
+        UPDATE STEP
+           SET STEP_NM = ${dbc.escape(data.STEP_NM)}
+             , STEP_STRT_DTM = DATE_FORMAT(${dbc.escape(data.STEP_STRT_DTM)}, '%Y-%m-%d %H:%i:%s')
+             , STEP_END_DTM = DATE_FORMAT(${dbc.escape(data.STEP_END_DTM)}, '%Y-%m-%d %H:%i:%s')
+             , STEP_CNTNTS = ${dbc.escape(data.STEP_CNTNTS)}
+             , STEP_MOD_DTM = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
+             , STEP_MOD_MBR_SEQ = ${dbc.escape(data.userData.seq)}
+        WHERE 1 = 1
+          AND STEP_PRJ_SEQ = ${dbc.escape(data.SCHD_SEQ)}
         `
     }
 }

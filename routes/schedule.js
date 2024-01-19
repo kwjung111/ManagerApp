@@ -72,7 +72,7 @@ router
                 for(let i = 0; i < steps.length; i++){
                     tmp.body = steps[i]
                     tmp.body.userData = findSeqAndName(req.headers.authorization)
-                    tmp.body.PRJ_SEQ = ret.result.insertId
+                    tmp.body.SCHD_SEQ = ret.result.insertId
                     util.transaction(tmp, stepQuery.addStep)
                         .then((ret) => {
                             console.log(ret)
@@ -88,11 +88,37 @@ router
     if(schdTp == 0) {   // 미팅
         util.transaction(req, meetingQuery.chgMtng)
             .then((ret) => {
+                ret.result.schdSeq = req.body.SCHD_SEQ
+                ret.result.schdTp = 0
                 res.send(ret)
                 if(ret.ok == true) {    // 왜 broadcast 하는지 모름 ( 일단 api 자체를 post에 맞춰 작성하고 있기 때문에 따라하기 )
-                    broadcast(new wsJson("event").event("PATCH", "schds", req.body.schdSeq, req.body.UID))
+                    broadcast(new wsJson("event").event("PATCH", "mtng", req.body.schdSeq, req.body.UID))
                 }
             })
+    }
+    else if(schdTp == 1) {  // 프로젝트
+        let steps = req.body.SCHD_STEPS
+        let tmp = req;
+        // 프로젝트 update
+        util.transaction(req, projectQuery.chgPrj)
+            .then((ret) => {
+                ret.result.schdSeq = req.body.SCHD_SEQ
+                ret.result.schdTp = 1
+                for(let i = 0; i< steps.length; i++) {
+                    tmp.body = steps[i]
+                    tmp.body.userData = findSeqAndName(req.headers.authorization)
+                    tmp.body.SCHD_SEQ = ret.result.schdSeq
+                    util.transaction(tmp, stepQuery.chgStep)
+                        .then((ret) => {
+                            console.log(ret)
+                        })
+                }
+                res.send(ret)
+                if(ret.ok == true) {    // 왜 broadcast 하는지 모름 ( 일단 api 자체를 post에 맞춰 작성하고 있기 때문에 따라하기 )
+                    broadcast(new wsJson("event").event("PATCH", "prj", req.body.schdSeq, req.body.UID))
+                }
+            })
+
     }
 })
 

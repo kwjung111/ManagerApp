@@ -151,7 +151,7 @@ const query = {
                         , PRJ_REG_DTM
                         , PRJ_REG_MBR_SEQ
                         , PRJ_USE_TF
-        ) VALUES ( (SELECT MAX(SCHD_NO) + 1 AS PRJ_NO
+        ) VALUES ( (SELECT IFNULL(MAX(SCHD_NO), 0) + 1 AS PRJ_NO
                     FROM (SELECT '0'        AS SCHD_TP
                                , MTNG_SEQ   AS SCHD_SEQ
                                , MTNG_NO          AS SCHD_NO
@@ -164,14 +164,14 @@ const query = {
                                , PRJ_NO          AS SCHD_NO
                                , PRJ_REG_MBR_SEQ AS SCHD_REG_MBR_SEQ
                           FROM PRJ
-                          WHERE PRJ_REG_MBR_SEQ = ${dbc.escape(data.userData.seq)})
-                             A)
+                          WHERE PRJ_REG_MBR_SEQ = ${dbc.escape(data.userData.seq)}
+                          ) A)
                   , ${dbc.escape(data.SCHD_PIN_YN)}
                   , ${dbc.escape(data.SCHD_PRTC)}
                   , ${dbc.escape(data.SCHD_PRGSS_CD)}
                   , ${dbc.escape(data.SCHD_PRGSS_PRCNT)}
-                  , DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s')
-                  , DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s')
+                  , DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_STRT_DTM)},' 00:00:00'), '%Y-%m-%d %H:%i:%s')
+                  , DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_END_DTM)}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
                   , 0
                   , ${dbc.escape(data.SCHD_CNTNTS)}
                   , DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
@@ -181,6 +181,24 @@ const query = {
         `
         logger.info("addPrjQuery", {message: query})
         return query
+    },
+
+    chgPrj : function (data) {
+        return `
+        UPDATE PRJ
+           SET PRJ_PIN_YN = ${dbc.escape(data.SCHD_PIN_YN)}
+             , PRJ_PRTC = ${dbc.escape(data.SCHD_PRTC)}
+             , PRJ_PRGSS_CD = ${dbc.escape(data.SCHD_PRGSS_CD)}
+             , PRJ_PRGSS_PRCNT = ${dbc.escape(data.SCHD_PRGSS_PRCNT)}
+             , PRJ_STRT_DTM = DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_STRT_DTM)},' 00:00:00'), '%Y-%m-%d %H:%i:%s')
+             , PRJ_END_DTM = DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_END_DTM)}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
+             , PRJ_TOT_TIME = DATEDIFF(DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s'))
+             , PRJ_CNTNTS = ${dbc.escape(data.SCHD_CNTNTS)}
+             , PRJ_MOD_DTM = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
+             , PRJ_MOD_MBR_SEQ = ${dbc.escape(data.userData.seq)}
+        WHERE 1 = 1
+          AND PRJ_SEQ = ${dbc.escape(data.SCHD_SEQ)}
+        `
     }
 };
 

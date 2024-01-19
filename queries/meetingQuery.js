@@ -92,6 +92,17 @@ const meetingQuery = {
          WHERE 1 = 1
            AND MTNG_SEQ = ${dbc.escape(data.SCHD_SEQ)}
         `
+    },
+
+    clsMtng : function(data) {
+        return `
+        UPDATE MTNG
+           SET MTNG_USE_TF = 0
+             , MTNG_MOD_DTM = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
+             , MTNG_MOD_MBR_SEQ = ${dbc.escape(data.userData.seq)}
+         WHERE 1 = 1
+           AND MTNG_SEQ = ${dbc.escape(data.SCHD_SEQ)}
+        `
     }
 }
 

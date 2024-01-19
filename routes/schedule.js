@@ -131,19 +131,19 @@ router
     }
 })
 
-// .patch("/:schdTp/clsSchd", (req, res) => {
-//     const { schdTp } = req.params;
-//     if(schdTp == 0) {   // 미팅
-//         util.transaction(req, meetingQuery.clsMtng)
-//             .then((ret) => {
-//                 ret.result.schdSeq = req.body.SCHD_SEQ
-//                 ret.result.schdTp = 0
-//                 res.send(ret)
-//             })
-//     } else if(schdTp == 1) {    //
-//
-//     }
-// })
+.patch("/:schdTp/clsSchd", (req, res) => {
+    const { schdTp } = req.params;
+    if(schdTp == 0) {   // 미팅
+        util.transaction(req, meetingQuery.clsMtng)
+            .then((ret) => {
+                ret.result.schdSeq = req.body.SCHD_SEQ
+                ret.result.schdTp = 0
+                res.send(ret)
+            })
+    } else if(schdTp == 1) {    //
+
+    }
+})
 
 function findSeqAndName(token){
     let rt = {};

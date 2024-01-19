@@ -92,7 +92,7 @@ const scheduleQuery = {
         ORDER BY SCHD_PIN_YN DESC, SCHD_STRT_DTM DESC, SCHD_REG_DTM DESC
         `
     },
-
+    // 최근 3개월 스케줄 ( 완료이거나, 종료일자가 오늘을 넘긴 것 )
     getSchdsByMonth : function(data) {
         return `
         SELECT
@@ -170,6 +170,7 @@ const scheduleQuery = {
                    ON MB.MBR_SEQ = M.MTNG_REG_MBR_SEQ
                 WHERE 1 = 1
                   AND MB.MBR_NM = '${data.mbrNm}'
+                  AND M.MTNG_USE_TF = 1
                 UNION ALL
                 SELECT P.PRJ_PRGSS_CD AS SCHD_PRGSS_CD
                      , P.PRJ_END_DTM  AS SCHD_END_DTM
@@ -178,6 +179,7 @@ const scheduleQuery = {
                    ON MB.MBR_SEQ = P.PRJ_REG_MBR_SEQ
                 WHERE 1 = 1
                   AND MB.MBR_NM = '${data.mbrNm}'
+                  AND P.PRJ_USE_TF = 1
         ) A
         `
     }

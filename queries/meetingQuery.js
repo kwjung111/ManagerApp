@@ -75,6 +75,23 @@ const meetingQuery = {
           AND M.MTNG_USE_TF = 1
           AND M.MTNG_SEQ = '${data.schdSeq}'
         `
+    },
+
+    chgMtng : function(data) {
+        return `
+        UPDATE MTNG
+           SET MTNG_PIN_YN = ${dbc.escape(data.SCHD_PIN_YN)}
+             , MTNG_PRTC = ${dbc.escape(data.SCHD_PRTC)}
+             , MTNG_PRGSS_CD = ${dbc.escape(data.SCHD_PRGSS_CD)}
+             , MTNG_STRT_DTM = DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s')
+             , MTNG_END_DTM = DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s')
+             , MTNG_TOT_TIME = TIMEDIFF(DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s'))
+             , MTNG_CNTNTS = ${dbc.escape(data.SCHD_CNTNTS)}
+             , MTNG_MOD_DTM = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
+             , MTNG_MOD_MBR_SEQ = ${dbc.escape(data.userData.seq)} 
+         WHERE 1 = 1
+           AND MTNG_SEQ = ${dbc.escape(data.SCHD_SEQ)}
+        `
     }
 }
 

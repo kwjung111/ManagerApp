@@ -7,6 +7,7 @@ const projectQuery = require("../queries/projectQuery.js")
 const stepQuery = require("../queries/stepQuery.js")
 const jwt = require("jsonwebtoken");
 const { wsJson } = require("../wss.js");
+const {broadcast} = require("../wss");
 const prvKey = process.env.PRV_KEY;
 
 router
@@ -78,6 +79,19 @@ router
                         })
                 }
                 res.send(ret)
+            })
+    }
+})
+
+.patch("/:schdTp/chgSchd", (req, res) => {
+    const { schdTp } = req.params;
+    if(schdTp == 0) {   // 미팅
+        util.transaction(req, meetingQuery.chgMtng)
+            .then((ret) => {
+                res.send(ret)
+                if(ret.ok == true) {    // 왜 broadcast 하는지 모름 ( 일단 api 자체를 post에 맞춰 작성하고 있기 때문에 따라하기 )
+                    broadcast(new wsJson("event").event("PATCH", "schds", req.body.schdSeq, req.body.UID))
+                }
             })
     }
 })

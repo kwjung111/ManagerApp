@@ -104,11 +104,20 @@ router
             .then((ret) => {
                 ret.result.schdSeq = req.body.SCHD_SEQ
                 ret.result.schdTp = 1
-                for(let i = 0; i< steps.length; i++) {
+                // 단계 수정 = (기존)단계 삭제 -> (수정내용)단계 생성
+                util.transaction(tmp, stepQuery.delStep)
+                    .then((ret) => {
+                        if(ret.ok == true){
+                            console.log("기존 스텝 삭제완료")
+                        }
+                    })
+
+                console.log("으엥")
+                for (let i = 0; i < steps.length; i++) {
                     tmp.body = steps[i]
                     tmp.body.userData = findSeqAndName(req.headers.authorization)
                     tmp.body.SCHD_SEQ = ret.result.schdSeq
-                    util.transaction(tmp, stepQuery.chgStep)
+                    util.transaction(tmp, stepQuery.addStep)
                         .then((ret) => {
                             console.log(ret)
                         })
@@ -121,6 +130,20 @@ router
 
     }
 })
+
+// .patch("/:schdTp/clsSchd", (req, res) => {
+//     const { schdTp } = req.params;
+//     if(schdTp == 0) {   // 미팅
+//         util.transaction(req, meetingQuery.clsMtng)
+//             .then((ret) => {
+//                 ret.result.schdSeq = req.body.SCHD_SEQ
+//                 ret.result.schdTp = 0
+//                 res.send(ret)
+//             })
+//     } else if(schdTp == 1) {    //
+//
+//     }
+// })
 
 function findSeqAndName(token){
     let rt = {};

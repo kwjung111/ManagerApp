@@ -50,6 +50,14 @@ const stepQuery = {
         WHERE 1 = 1
           AND STEP_PRJ_SEQ = ${dbc.escape(data.SCHD_SEQ)}
         `
+    },
+
+    delStep : function(data) {
+        return `
+        DELETE FROM STEP
+        WHERE 1 = 1
+          AND STEP_PRJ_SEQ = ${dbc.escape(data.SCHD_SEQ)}
+        `
     }
 }
 

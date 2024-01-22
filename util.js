@@ -27,13 +27,25 @@ const util = {
         acc.push(curPost);
         return acc;
       }, []);
-    } else {  // SCHD - 프로젝트 상세 (프로젝트와 단계 트리)
+    } else if (treeTp == 2) {  // SCHD - 프로젝트 상세 (프로젝트와 단계 트리)
       return posts.reduce((acc, cur) => {
         let curPost = util.deepCopy(cur);
         const matchingMemos = memos.filter((memo) => {
           return memo.STEP_PRJ_SEQ == cur.PRJ_SEQ;
         });
         curPost.memos = matchingMemos;
+        acc.push(curPost);
+        return acc;
+      }, []);
+    } else {    // SCHD - 전체 직원 스케줄 조회
+      return posts.reduce((acc, cur) => {
+        let curPost = util.deepCopy(cur);
+        const matchingMemos = memos.filter((memo) => {
+          return memo.REG_MBR_SEQ == cur.MBR_SEQ;
+        });
+        if (matchingMemos != null) {
+          curPost.memos = matchingMemos;
+        }
         acc.push(curPost);
         return acc;
       }, []);

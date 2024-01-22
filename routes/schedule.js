@@ -6,6 +6,7 @@ const meetingQuery = require("../queries/meetingQuery.js")
 const projectQuery = require("../queries/projectQuery.js")
 const stepQuery = require("../queries/stepQuery.js")
 const memoQuery = require("../queries/memoQuery.js")
+const mbrQuery = require("../queries/mbrQuery");
 const jwt = require("jsonwebtoken");
 const { wsJson } = require("../wss.js");
 const {broadcast} = require("../wss");
@@ -33,17 +34,11 @@ router
             res.send(ret)
         })
     } else if (schdTp == 1) {   // 프로젝트
-        // util.transaction(req, projectQuery.getPrj)
-        // .then((ret) => {
-        //     res.send(ret)
-        // })
     util.transactions(req, [projectQuery.getPrj, stepQuery.getStep], true)
         .then( (ret) => {
-            console.log("왜 널일까")
             let schds = ret.result[0]
             let memos = ret.result[1]
 
-            console.log(ret)
             ret.result = util.makeTree(schds, memos, 2)
             res.send(ret)
         })
@@ -212,6 +207,24 @@ router
                 .event("PATCH","memos",req.body.SCHD_MEMO_SEQ,null,null))
         })
 })
+
+.get("/all", (req, res) => {
+    util.transactions(req, [mbrQuery.getMbrs, scheduleQuery.getAllSchd], true)
+        .then((ret) => {
+            let mrbs = ret.result[0]
+            let schds = ret.result[1]
+
+            // 스케줄이 있는 직원만 반환하기 위해 재 필터링
+            let tree = util.makeTree(mrbs, schds, 3)
+            let tmp = tree.filter((mbr) => {
+                return mbr.memos.length != 0;
+            })
+
+            ret.result = tmp
+            res.send(ret)
+        })
+})
+
 
 function findSeqAndName(token){
     let rt = {};

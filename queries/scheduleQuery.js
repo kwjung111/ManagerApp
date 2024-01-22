@@ -182,6 +182,41 @@ const scheduleQuery = {
                   AND P.PRJ_USE_TF = 1
         ) A
         `
+    },
+
+    getAllSchd : function (data) {
+        return `
+        SELECT
+            MTNG_REG_MBR_SEQ                        AS REG_MBR_SEQ
+          , '0'                                     AS SCHD_TP
+          , MTNG_SEQ                                AS SCHD_SEQ
+          , MTNG_NO                                 AS SCHD_NO
+          , MTNG_PIN_YN                             AS SCHD_PIN_YN
+          , DATE_FORMAT(MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')     AS SCHD_STRT_DTM
+          , DATE_FORMAT(MTNG_END_DTM, '%H시 %i분')                    AS SCHD_END_DTM
+          , MTNG_CNTNTS                             AS SCHD_CNTNTS
+         FROM MTNG
+        WHERE 1 = 1
+          AND MTNG_USE_TF = 1
+          AND MTNG_PRGSS_CD != '2'
+          AND MTNG_END_DTM > NOW()
+        UNION ALL
+        SELECT
+            PRJ_REG_MBR_SEQ                         AS REG_MBR_SEQ
+          , '1'                                     AS SCHD_TP
+          , PRJ_SEQ                                 AS SCHD_SEQ
+          , PRJ_NO                                  AS SCHD_NO
+          , PRJ_PIN_YN                              AS SCHD_PIN_YN
+          , DATE_FORMAT(PRJ_STRT_DTM, '%y년 %m월 %d일')               AS SCHD_STRT_DTM
+          , DATE_FORMAT(PRJ_END_DTM, '%y년 %m월 %d일')                AS SCHD_END_DTM
+          , PRJ_CNTNTS                              AS SCHD_CNTNTS
+         FROM PRJ
+        WHERE 1 = 1
+          AND PRJ_USE_TF = 1
+          AND PRJ_PRGSS_CD != 2
+          AND PRJ_END_DTM > NOW()
+        ORDER BY SCHD_PIN_YN DESC, SCHD_STRT_DTM DESC
+        `
     }
 };
 

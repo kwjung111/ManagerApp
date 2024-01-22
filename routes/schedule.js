@@ -68,6 +68,9 @@ router
             ret.result.schdSeq = ret.result.insertId
             ret.result.schdTp = 0
             res.send(ret)
+            if(ret.ok == true) {
+                broadcast(new wsJson("event").event("PATCH", "schd", ret.result.insertId, req.body.UID))
+            }
         })
     } else if (schdTp == 1) {       // 프로젝트
         let steps = req.body.SCHD_STEPS
@@ -87,6 +90,9 @@ router
                         })
                 }
                 res.send(ret)
+                if(ret.ok == true) {
+                    broadcast(new wsJson("event").event("PATCH", "schd", ret.result.insertId, req.body.UID))
+                }
             })
     }
 })
@@ -99,8 +105,8 @@ router
                 ret.result.schdSeq = req.body.SCHD_SEQ
                 ret.result.schdTp = 0
                 res.send(ret)
-                if(ret.ok == true) {    // 왜 broadcast 하는지 모름 ( 일단 api 자체를 post에 맞춰 작성하고 있기 때문에 따라하기 )
-                    broadcast(new wsJson("event").event("PATCH", "mtng", req.body.schdSeq, req.body.UID))
+                if(ret.ok == true) {
+                    broadcast(new wsJson("event").event("PATCH", "schd", req.body.SCHD_SEQ, req.body.UID))
                 }
             })
     }
@@ -130,8 +136,8 @@ router
                         })
                 }
                 res.send(ret)
-                if(ret.ok == true) {    // 왜 broadcast 하는지 모름 ( 일단 api 자체를 post에 맞춰 작성하고 있기 때문에 따라하기 )
-                    broadcast(new wsJson("event").event("PATCH", "prj", req.body.schdSeq, req.body.UID))
+                if(ret.ok == true) {
+                    broadcast(new wsJson("event").event("PATCH", "schd", req.body.SCHD_SEQ, req.body.UID))
                 }
             })
 
@@ -146,6 +152,9 @@ router
                 ret.result.schdSeq = req.body.SCHD_SEQ
                 ret.result.schdTp = 0
                 res.send(ret)
+                if(ret.ok == true) {
+                    broadcast(new wsJson("event").event("PATCH", "schd", req.body.SCHD_SEQ, req.body.UID))
+                }
             })
     } else if(schdTp == 1) {    //
         util.transaction(req, projectQuery.clsPrj)
@@ -158,6 +167,9 @@ router
                 ret.result.schdSeq = req.body.SCHD_SEQ
                 ret.result.schdTp = 1
                 res.send(ret)
+                if(ret.ok == true) {
+                    broadcast(new wsJson("event").event("PATCH", "schd", req.body.SCHD_SEQ, req.body.UID))
+                }
             })
     }
 })
@@ -165,12 +177,17 @@ router
 .post("/:schdTp/memo", (req, res) => {
     const { schdTp } = req.params;
     req.body.SCHD_TP = schdTp
+    req.body.mbrNm = req.query.mbrNm
     util.transaction(req, memoQuery.addSchdMemo)
         .then((ret) => {
             ret.result.schdSeq = req.body.SCHD_SEQ
             ret.result.schdTp = 0
             ret.result.memoSeq = ret.result.insertId
             res.send(ret)
+            if(ret.ok == true){
+                broadcast(new wsJson("event")
+                    .event("POST","memos",ret.result.insertId,req.body.UID,req.body.content,{schdSeq:req.body.SCHD_SEQ}))
+            }
         })
 })
 
@@ -181,6 +198,8 @@ router
         .then((ret) => {
             console.log(ret)
             res.send(ret)
+            broadcast(new wsJson("event")
+                .event("PATCH","memos",req.body.SCHD_MEMO_SEQ,null,null))
         })
 })
 

@@ -73,6 +73,7 @@ WHERE 1=1
         INSERT INTO SCHD_MEMO (
             SCHD_TP
           , SCHD_SEQ
+          , SCHD_OWNER_MBR_NM
           , SCHD_MEMO_CNTNTS
           , SCHD_MEMO_REG_DTM
           , SCHD_MEMO_REG_MBR_SEQ
@@ -80,6 +81,7 @@ WHERE 1=1
         ) VALUES (
             ${dbc.escape(data.SCHD_TP)}
           , ${dbc.escape(data.SCHD_SEQ)}
+          , ${dbc.escape(data.mbrNm)}
           , ${dbc.escape(data.SCHD_MEMO_CNTNTS)}
           , DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
           , ${dbc.escape(data.userData.seq)}
@@ -114,7 +116,7 @@ WHERE 1=1
         INNER JOIN MBR MB1
            ON MB1.MBR_SEQ = M.SCHD_MEMO_REG_MBR_SEQ
         INNER JOIN MBR MB2
-           ON MB2.MBR_SEQ = M.SCHD_OWNER_MBR_SEQ
+           ON MB2.MBR_NM = M.SCHD_OWNER_MBR_NM
         WHERE 1 = 1
           AND M.SCHD_MEMO_USE_TF = 1
           AND MB2.MBR_NM = '${data.mbrNm}'

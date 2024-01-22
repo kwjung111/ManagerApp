@@ -113,7 +113,6 @@ router
                         }
                     })
 
-                console.log("으엥")
                 for (let i = 0; i < steps.length; i++) {
                     tmp.body = steps[i]
                     tmp.body.userData = findSeqAndName(req.headers.authorization)
@@ -147,21 +146,25 @@ router
 })
 
 .post("/:schdTp/memo", (req, res) => {
-    console.log("안뇽 난 등록 컨트롤러")
-
     const { schdTp } = req.params;
     req.body.SCHD_TP = schdTp
-        util.transaction(req, memoQuery.addSchdMemo)
-            .then((ret) => {
-                ret.result.schdSeq = req.body.SCHD_SEQ
-                ret.result.schdTp = 0
-                ret.result.memoSeq = ret.result.insertId
-                res.send(ret)
-            })
+    util.transaction(req, memoQuery.addSchdMemo)
+        .then((ret) => {
+            ret.result.schdSeq = req.body.SCHD_SEQ
+            ret.result.schdTp = 0
+            ret.result.memoSeq = ret.result.insertId
+            res.send(ret)
+        })
 })
 
-.delete("/:schdTp/memo/:memoSeq", (req, res) => {
-    console.log("안뇽 난 삭제 컨트롤러")
+.patch("/:schdTp/memo", (req, res) => {
+    const { schdTp } = req.params;
+    req.body.SCHD_TP = schdTp
+    util.transaction(req, memoQuery.clsSchdMemo)
+        .then((ret) => {
+            console.log(ret)
+            res.send(ret)
+        })
 })
 
 function findSeqAndName(token){

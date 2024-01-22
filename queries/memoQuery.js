@@ -88,9 +88,19 @@ WHERE 1=1
         `
         logger.info("addStepQuery", {message: query})
         return query
+    },
+
+    clsSchdMemo : function (data) {
+        return `
+        UPDATE SCHD_MEMO
+           SET SCHD_MEMO_USE_TF = 0
+             , SCHD_MEMO_DEL_DTM = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
+             , SCHD_MEMO_DEL_MBR_SEQ = ${dbc.escape(data.userData.seq)}
+         WHERE 1 = 1
+           AND SCHD_MEMO_SEQ = ${dbc.escape(data.SCHD_MEMO_SEQ)}
+           AND SCHD_TP = ${dbc.escape(data.SCHD_TP)}
+        `
     }
-    
-    
     
 }
 

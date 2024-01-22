@@ -4,18 +4,29 @@ const { wss } = require("./wss.js");
 const logger = require("./logger.js")
 
 const util = {
-  makeTree: (posts, memos) => {
+  makeTree: (posts, memos, treeTp) => {
     if (!posts.length) return null;
     if (!memos.length) return posts;
-    return posts.reduce((acc, cur) => {
-      let curPost = util.deepCopy(cur);
-      const matchingMemos = memos.filter((memo) => {
-        return memo.BRD_SEQ == cur.BRD_SEQ;
-      });
-      curPost.memos = matchingMemos;
-      acc.push(curPost);
-      return acc;
-    }, []);
+    if(treeTp == 0) {   // SR
+      return posts.reduce((acc, cur) => {
+        let curPost = util.deepCopy(cur);
+        const matchingMemos = memos.filter((memo) => {
+          return memo.BRD_SEQ == cur.BRD_SEQ;
+        });
+        curPost.memos = matchingMemos;
+        acc.push(curPost);
+        return acc;
+      }, []);
+    } else {  // SCHD
+      return posts.reduce((acc, cur) => {
+        let curPost = util.deepCopy(cur);
+        const matchingMemos = memos.filter((memo) => {
+          return (memo.SCHD_SEQ == cur.SCHD_SEQ && memo.SCHD_TP == cur.SCHD_TP);
+        });
+        curPost.memos = matchingMemos;
+        acc.push(curPost);
+        return acc;
+      }, []);    }
   },
 
   //Todo 배열의 경우 처리 못함, 순환 참조 처리 불가

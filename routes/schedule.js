@@ -13,15 +13,19 @@ const prvKey = process.env.PRV_KEY;
 
 router
 .get('/',(req,res) => {
-    // 개인 스케줄 - 리스트
-    util.transaction(req, scheduleQuery.getSchds)
+    // 개인 스케줄 - 진행중+미도래 리스트
+    util.transactions(req, [scheduleQuery.getSchds, memoQuery.getSchdMemos], true)
     .then( (ret) => {
+        let schds = ret.result[0]
+        let memos = ret.result[1]
+
+        ret.result = util.makeTree(schds, memos, 1)
         res.send(ret)
     })
 })
 
 .get('/:schdTp/:schdSeq',(req,res) => {
-    // const { schdSeq } = req.params;
+    // 상세보기
     const { schdTp } = req.params;
     if(schdTp == 0) { // 미팅
         util.transaction(req, meetingQuery.getMtng)
@@ -45,11 +49,14 @@ router
 })
 
 .get("/byMonth", (req, res) => {
-    // 최근 3개월 스케줄
-    util.transaction(req, scheduleQuery.getSchdsByMonth)
-    .then( (ret) => {
-        res.send(ret)
-    })
+    util.transactions(req, [scheduleQuery.getSchdsByMonth, memoQuery.getSchdMemos], true)
+        .then( (ret) => {
+            let schds = ret.result[0]
+            let memos = ret.result[1]
+
+            ret.result = util.makeTree(schds, memos, 1)
+            res.send(ret)
+        })
 })
 
 .post("/:schdTp/post", (req, res) => {

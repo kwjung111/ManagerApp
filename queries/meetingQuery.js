@@ -64,7 +64,7 @@ const meetingQuery = {
           , DATE_FORMAT(M.MTNG_REG_DTM, '%Y-%m-%d %H:%i')  AS SCHD_REG_DTM  -- 등록 일자
           , DATE_FORMAT(IFNULL(M.MTNG_MOD_DTM, M.MTNG_REG_DTM), '%Y-%m-%d %H:%i')  AS SCHD_MOD_DTM
           , MB.MBR_NM               AS SCHD_WRTR        -- 작성자(등록자)
-        FROM MTNG M
+         FROM MTNG M
         INNER JOIN MBR MB
            ON MB.MBR_SEQ = M.MTNG_REG_MBR_SEQ
         INNER JOIN CM_CD_ITM CM

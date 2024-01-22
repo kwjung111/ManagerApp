@@ -33,8 +33,18 @@ router
             res.send(ret)
         })
     } else if (schdTp == 1) {   // 프로젝트
-        util.transaction(req, projectQuery.getPrj)
-        .then((ret) => {
+        // util.transaction(req, projectQuery.getPrj)
+        // .then((ret) => {
+        //     res.send(ret)
+        // })
+    util.transactions(req, [projectQuery.getPrj, stepQuery.getStep], true)
+        .then( (ret) => {
+            console.log("왜 널일까")
+            let schds = ret.result[0]
+            let memos = ret.result[1]
+
+            console.log(ret)
+            ret.result = util.makeTree(schds, memos, 2)
             res.send(ret)
         })
     }

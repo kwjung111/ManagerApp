@@ -17,7 +17,7 @@ const util = {
         acc.push(curPost);
         return acc;
       }, []);
-    } else {  // SCHD
+    } else if (treeTp == 1) {  // SCHD
       return posts.reduce((acc, cur) => {
         let curPost = util.deepCopy(cur);
         const matchingMemos = memos.filter((memo) => {
@@ -26,7 +26,18 @@ const util = {
         curPost.memos = matchingMemos;
         acc.push(curPost);
         return acc;
-      }, []);    }
+      }, []);
+    } else {  // SCHD - 프로젝트 상세 (프로젝트와 단계 트리)
+      return posts.reduce((acc, cur) => {
+        let curPost = util.deepCopy(cur);
+        const matchingMemos = memos.filter((memo) => {
+          return memo.STEP_PRJ_SEQ == cur.PRJ_SEQ;
+        });
+        curPost.memos = matchingMemos;
+        acc.push(curPost);
+        return acc;
+      }, []);
+    }
   },
 
   //Todo 배열의 경우 처리 못함, 순환 참조 처리 불가

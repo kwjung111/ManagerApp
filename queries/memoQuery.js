@@ -1,4 +1,5 @@
 const dbc = require('../dbconn.js')
+const logger = require('../logger.js')
 
 const memoQuery = {
     //댓글 등록
@@ -64,6 +65,33 @@ WHERE 1=1
  AND memo.MEMO_USE_TF = TRUE`
 },
 
+    /**
+     * 스케줄 메모 등록/삭제/조회
+     * */
+    addSchdMemo : function (data) {
+        const query = `
+        INSERT INTO SCHD_MEMO (
+            SCHD_TP
+          , SCHD_SEQ
+          , SCHD_MEMO_CNTNTS
+          , SCHD_MEMO_REG_DTM
+          , SCHD_MEMO_REG_MBR_SEQ
+          , SCHD_MEMO_USE_TF
+        ) VALUES (
+            ${dbc.escape(data.SCHD_TP)}
+          , ${dbc.escape(data.SCHD_SEQ)}
+          , ${dbc.escape(data.SCHD_MEMO_CNTNTS)}
+          , DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
+          , ${dbc.escape(data.userData.seq)}
+          , 1
+        )
+        `
+        logger.info("addStepQuery", {message: query})
+        return query
+    }
+    
+    
+    
 }
 
 

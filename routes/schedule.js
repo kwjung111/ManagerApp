@@ -5,6 +5,7 @@ const scheduleQuery = require("../queries/scheduleQuery.js")
 const meetingQuery = require("../queries/meetingQuery.js")
 const projectQuery = require("../queries/projectQuery.js")
 const stepQuery = require("../queries/stepQuery.js")
+const memoQuery = require("../queries/memoQuery.js")
 const jwt = require("jsonwebtoken");
 const { wsJson } = require("../wss.js");
 const {broadcast} = require("../wss");
@@ -143,6 +144,24 @@ router
     } else if(schdTp == 1) {    //
 
     }
+})
+
+.post("/:schdTp/memo", (req, res) => {
+    console.log("안뇽 난 등록 컨트롤러")
+
+    const { schdTp } = req.params;
+    req.body.SCHD_TP = schdTp
+        util.transaction(req, memoQuery.addSchdMemo)
+            .then((ret) => {
+                ret.result.schdSeq = req.body.SCHD_SEQ
+                ret.result.schdTp = 0
+                ret.result.memoSeq = ret.result.insertId
+                res.send(ret)
+            })
+})
+
+.delete("/:schdTp/memo/:memoSeq", (req, res) => {
+    console.log("안뇽 난 삭제 컨트롤러")
 })
 
 function findSeqAndName(token){

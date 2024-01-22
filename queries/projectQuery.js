@@ -185,19 +185,31 @@ const query = {
 
     chgPrj : function (data) {
         return `
+            UPDATE PRJ
+            SET PRJ_PIN_YN      = ${dbc.escape(data.SCHD_PIN_YN)}
+              , PRJ_PRTC        = ${dbc.escape(data.SCHD_PRTC)}
+              , PRJ_PRGSS_CD    = ${dbc.escape(data.SCHD_PRGSS_CD)}
+              , PRJ_PRGSS_PRCNT = ${dbc.escape(data.SCHD_PRGSS_PRCNT)}
+              , PRJ_STRT_DTM    = DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_STRT_DTM)}, ' 00:00:00'), '%Y-%m-%d %H:%i:%s')
+              , PRJ_END_DTM     = DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_END_DTM)}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
+              , PRJ_TOT_TIME    = DATEDIFF(DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s'),
+                                           DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s')) + 1
+              , PRJ_CNTNTS      = ${dbc.escape(data.SCHD_CNTNTS)}
+              , PRJ_MOD_DTM     = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
+              , PRJ_MOD_MBR_SEQ = ${dbc.escape(data.userData.seq)}
+            WHERE 1 = 1
+              AND PRJ_SEQ = ${dbc.escape(data.SCHD_SEQ)}
+        `
+    },
+
+    clsPrj : function (data) {
+        return `
         UPDATE PRJ
-           SET PRJ_PIN_YN = ${dbc.escape(data.SCHD_PIN_YN)}
-             , PRJ_PRTC = ${dbc.escape(data.SCHD_PRTC)}
-             , PRJ_PRGSS_CD = ${dbc.escape(data.SCHD_PRGSS_CD)}
-             , PRJ_PRGSS_PRCNT = ${dbc.escape(data.SCHD_PRGSS_PRCNT)}
-             , PRJ_STRT_DTM = DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_STRT_DTM)},' 00:00:00'), '%Y-%m-%d %H:%i:%s')
-             , PRJ_END_DTM = DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_END_DTM)}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
-             , PRJ_TOT_TIME = DATEDIFF(DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s'))+1
-             , PRJ_CNTNTS = ${dbc.escape(data.SCHD_CNTNTS)}
+           SET PRJ_USE_TF = 0
              , PRJ_MOD_DTM = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
              , PRJ_MOD_MBR_SEQ = ${dbc.escape(data.userData.seq)}
-        WHERE 1 = 1
-          AND PRJ_SEQ = ${dbc.escape(data.SCHD_SEQ)}
+         WHERE 1 = 1
+           AND PRJ_SEQ = ${dbc.escape(data.SCHD_SEQ)}
         `
     }
 };

@@ -58,6 +58,17 @@ const stepQuery = {
         WHERE 1 = 1
           AND STEP_PRJ_SEQ = ${dbc.escape(data.SCHD_SEQ)}
         `
+    },
+
+    clsStep : function (data) { // 상위 프로젝트 삭제로 인한 단계 논리적 삭제
+        return `
+        UPDATE STEP
+           SET STEP_USE_TF = 0
+             , STEP_MOD_DTM = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
+             , STEP_MOD_MBR_SEQ = ${dbc.escape(data.userData.seq)}
+         WHERE 1 = 1
+           AND STEP_PRJ_SEQ = ${dbc.escape(data.SCHD_SEQ)}
+        `
     }
 }
 

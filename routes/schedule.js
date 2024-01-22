@@ -141,7 +141,17 @@ router
                 res.send(ret)
             })
     } else if(schdTp == 1) {    //
+        util.transaction(req, projectQuery.clsPrj)
+            .then((ret) => {
+                util.transaction(req, stepQuery.clsStep)    // 프로젝트 단계도 논리에 따라 함께 삭제
+                    .then((ret) => {
+                        console.log("프로젝트 단계 삭제 완료")
+                    })
 
+                ret.result.schdSeq = req.body.SCHD_SEQ
+                ret.result.schdTp = 1
+                res.send(ret)
+            })
     }
 })
 

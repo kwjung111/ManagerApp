@@ -33,7 +33,7 @@ const util = {
         const matchingMemos = memos.filter((memo) => {
           return memo.STEP_PRJ_SEQ == cur.PRJ_SEQ;
         });
-        curPost.memos = matchingMemos;
+        curPost.steps = matchingMemos;
         acc.push(curPost);
         return acc;
       }, []);
@@ -44,7 +44,7 @@ const util = {
           return memo.REG_MBR_SEQ == cur.MBR_SEQ;
         });
         if (matchingMemos != null) {
-          curPost.memos = matchingMemos;
+          curPost.schds = matchingMemos;
         }
         acc.push(curPost);
         return acc;

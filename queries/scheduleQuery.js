@@ -89,7 +89,7 @@ const scheduleQuery = {
           AND P.PRJ_USE_TF = 1
           AND P.PRJ_PRGSS_CD != '2'
           AND P.PRJ_END_DTM > NOW()
-        ORDER BY SCHD_PIN_YN DESC, SCHD_STRT_DTM DESC, SCHD_REG_DTM DESC
+        ORDER BY SCHD_PIN_YN DESC, SCHD_STRT_DTM ASC, SCHD_REG_DTM DESC
         `
     },
     // 최근 3개월 스케줄 ( 완료이거나, 종료일자가 오늘을 넘긴 것 )
@@ -148,7 +148,7 @@ const scheduleQuery = {
           AND P.PRJ_USE_TF = 1
           AND ( P.PRJ_PRGSS_CD = '2'
                 OR P.PRJ_END_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 3 MONTH) AND NOW())
-        ORDER BY SCHD_PIN_YN DESC, SCHD_STRT_DTM DESC, SCHD_REG_DTM DESC
+        ORDER BY SCHD_PIN_YN DESC, SCHD_STRT_DTM ASC, SCHD_REG_DTM DESC
         `
     },
 
@@ -215,7 +215,7 @@ const scheduleQuery = {
           AND PRJ_USE_TF = 1
           AND PRJ_PRGSS_CD != 2
           AND PRJ_END_DTM > NOW()
-        ORDER BY SCHD_PIN_YN DESC, SCHD_STRT_DTM DESC
+        ORDER BY SCHD_PIN_YN DESC, SCHD_STRT_DTM ASC
         `
     }
 };

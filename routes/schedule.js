@@ -82,20 +82,23 @@ router
         let tmp = req;
         // 프로젝트  insert
         util.transaction(req, projectQuery.addPrj)
-            .then((ret) => {
+            .then(async (ret) => {
                 ret.result.schdSeq = ret.result.insertId
                 ret.result.schdTp = 1
-                for(let i = 0; i < steps.length; i++){
+                for (let i = 0; i < steps.length; i++) {
                     tmp.body = steps[i]
                     tmp.body.userData = findSeqAndName(req.headers.authorization)
                     tmp.body.SCHD_SEQ = ret.result.insertId
-                    util.transaction(tmp, stepQuery.addStep)
+                    console.log("왜 순서대로 insert 안하고 니 맘대로 하니?")
+                    console.log(tmp.body)
+                    await util.transaction(tmp, stepQuery.addStep)
                         .then((ret) => {
                             console.log(ret)
                         })
+
                 }
                 res.send(ret)
-                if(ret.ok == true) {
+                if (ret.ok == true) {
                     broadcast(new wsJson("event").event("PATCH", "schd", ret.result.insertId, req.body.UID))
                 }
             })
@@ -120,7 +123,7 @@ router
         let tmp = req;
         // 프로젝트 update
         util.transaction(req, projectQuery.chgPrj)
-            .then((ret) => {
+            .then(async (ret) => {
                 ret.result.schdSeq = req.body.SCHD_SEQ
                 ret.result.schdTp = 1
                 // 단계 수정 = (기존)단계 삭제 -> (수정내용)단계 생성
@@ -135,7 +138,7 @@ router
                     tmp.body = steps[i]
                     tmp.body.userData = findSeqAndName(req.headers.authorization)
                     tmp.body.SCHD_SEQ = ret.result.schdSeq
-                    util.transaction(tmp, stepQuery.addStep)
+                    await util.transaction(tmp, stepQuery.addStep)
                         .then((ret) => {
                             console.log(ret)
                         })
@@ -163,8 +166,8 @@ router
             })
     } else if(schdTp == 1) {    //
         util.transaction(req, projectQuery.clsPrj)
-            .then((ret) => {
-                util.transaction(req, stepQuery.clsStep)    // 프로젝트 단계도 논리에 따라 함께 삭제
+            .then(async (ret) => {
+                await util.transaction(req, stepQuery.clsStep)    // 프로젝트 단계도 논리에 따라 함께 삭제
                     .then((ret) => {
                         console.log("프로젝트 단계 삭제 완료")
                     })

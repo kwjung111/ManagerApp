@@ -58,7 +58,7 @@ const meetingQuery = {
           , CM.CM_ITM_NM            AS SCHD_PRGSS_CD    -- 스케줄 상태
           , ''                      AS SCHD_PRGSS_PRCNT -- 진척도
           , DATE_FORMAT(M.MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')   AS SCHD_STRT_DTM -- 기간 FROM
-          , DATE_FORMAT(M.MTNG_END_DTM, '%H시 %i분')                  AS SCHD_END_DTM  -- 기간 TO
+          , DATE_FORMAT(M.MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')    AS SCHD_END_DTM  -- 기간 TO
           , M.MTNG_TOT_TIME         AS SCHD_TOT_TIME    -- 총 소요 시간
           , M.MTNG_CNTNTS           AS SCHD_CNTNTS      -- 스케줄 내용
           , DATE_FORMAT(M.MTNG_REG_DTM, '%Y-%m-%d %H:%i')  AS SCHD_REG_DTM  -- 등록 일자

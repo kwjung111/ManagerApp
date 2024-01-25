@@ -44,8 +44,8 @@ const scheduleQuery = {
           , M.MTNG_PRTC                  AS SCHD_PRTC                       -- 참가자
           , CM.CM_ITM_NM                 AS SCHD_PRGSS_CD                   -- 진행 상태
           , ''                           AS SCHD_PRGSS_PRCNT                -- 진척도
-          , DATE_FORMAT(M.MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')   AS SCHD_STRT_DTM    -- (기간) 시작시간
-          , DATE_FORMAT(M.MTNG_END_DTM, '%H시 %i분')     AS SCHD_END_DTM    -- (기간) 종료시간
+          , DATE_FORMAT(M.MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')    AS SCHD_STRT_DTM    -- (기간) 시작시간
+          , DATE_FORMAT(M.MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')     AS SCHD_END_DTM    -- (기간) 종료시간
           , M.MTNG_TOT_TIME              AS SCHD_TOT_TIME                   -- 총 시간(기간)
           , M.MTNG_CNTNTS                AS SCHD_CNTNTS                     -- 내용
           , DATE_FORMAT(M.MTNG_REG_DTM, '%Y-%m-%d %H:%i')  AS SCHD_REG_DTM  -- 등록 일자
@@ -103,8 +103,8 @@ const scheduleQuery = {
           , M.MTNG_PRTC                  AS SCHD_PRTC                       -- 참가자
           , CM.CM_ITM_NM                 AS SCHD_PRGSS_CD                   -- 진행 상태
           , ''                           AS SCHD_PRGSS_PRCNT                -- 진척도
-          , DATE_FORMAT(M.MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')   AS SCHD_STRT_DTM    -- (기간) 시작시간
-          , DATE_FORMAT(M.MTNG_END_DTM, '%H시 %i분')     AS SCHD_END_DTM    -- (기간) 종료시간
+          , DATE_FORMAT(M.MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')    AS SCHD_STRT_DTM    -- (기간) 시작시간
+          , DATE_FORMAT(M.MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')     AS SCHD_END_DTM    -- (기간) 종료시간
           , M.MTNG_TOT_TIME              AS SCHD_TOT_TIME                   -- 총 시간(기간)
           , M.MTNG_CNTNTS                AS SCHD_CNTNTS                     -- 내용
           , DATE_FORMAT(M.MTNG_REG_DTM, '%Y-%m-%d %H:%i')  AS SCHD_REG_DTM  -- 등록 일자
@@ -193,7 +193,7 @@ const scheduleQuery = {
           , MTNG_NO                                 AS SCHD_NO
           , MTNG_PIN_YN                             AS SCHD_PIN_YN
           , DATE_FORMAT(MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')     AS SCHD_STRT_DTM
-          , DATE_FORMAT(MTNG_END_DTM, '%H시 %i분')                    AS SCHD_END_DTM
+          , DATE_FORMAT(MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')      AS SCHD_END_DTM
           , MTNG_CNTNTS                             AS SCHD_CNTNTS
          FROM MTNG
         WHERE 1 = 1

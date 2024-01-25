@@ -217,7 +217,7 @@ router
             // 스케줄이 있는 직원만 반환하기 위해 재 필터링
             let tree = util.makeTree(mrbs, schds, 3)
             let tmp = tree.filter((mbr) => {
-                return mbr.memos.length != 0;
+                return mbr.schds.length != 0;
             })
 
             ret.result = tmp

@@ -16,7 +16,7 @@ const meetingQuery = {
                              , MTNG_REG_DTM
                              , MTNG_REG_MBR_SEQ
                              , MTNG_USE_TF)
-            VALUES ( (SELECT MAX(SCHD_NO) + 1 AS MTNG_NO
+            VALUES ( (SELECT IFNULL(MAX(SCHD_NO), 0) + 1 AS MTNG_NO
                       FROM (SELECT '0'              AS SCHD_TP
                                  , MTNG_SEQ         AS SCHD_SEQ
                                  , MTNG_NO          AS SCHD_NO

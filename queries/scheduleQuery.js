@@ -42,7 +42,7 @@ const scheduleQuery = {
           , M.MTNG_NO                    AS SCHD_NO
           , M.MTNG_PIN_YN                AS SCHD_PIN_YN                     -- 상단 고정 여부
           , M.MTNG_PRTC                  AS SCHD_PRTC                       -- 참가자
-          , CASE WHEN M.MTNG_STRT_DTM > NOW () THEN '미도래'
+          , CASE WHEN M.MTNG_STRT_DTM > NOW() THEN '미도래'
                  ELSE CM.CM_ITM_NM
             END                          AS SCHD_PRGSS_CD                   -- 진행 상태
           , CASE WHEN M.MTNG_END_DTM > NOW() THEN 0                         -- 기한에 따른 상태 체크 ( 진행 중 + 기한이 지난 것에 대한 표시 필요 )

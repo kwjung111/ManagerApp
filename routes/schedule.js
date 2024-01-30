@@ -11,6 +11,8 @@ const jwt = require("jsonwebtoken");
 const { wsJson } = require("../wss.js");
 const {broadcast} = require("../wss");
 const prvKey = process.env.PRV_KEY;
+const logger = require("../logger.js")
+
 
 router
 .get('/',(req,res) => {

@@ -1,4 +1,5 @@
 const dbc = require('../dbconn.js')
+const logger = require('../logger.js')
 
 const memoQuery = {
     //댓글 등록
@@ -64,6 +65,63 @@ WHERE 1=1
  AND memo.MEMO_USE_TF = TRUE`
 },
 
+    /**
+     * 스케줄 메모 등록/삭제/조회
+     * */
+    addSchdMemo : function (data) {
+        const query = `
+        INSERT INTO SCHD_MEMO (
+            SCHD_TP
+          , SCHD_SEQ
+          , SCHD_OWNER_MBR_NM
+          , SCHD_MEMO_CNTNTS
+          , SCHD_MEMO_REG_DTM
+          , SCHD_MEMO_REG_MBR_SEQ
+          , SCHD_MEMO_USE_TF
+        ) VALUES (
+            ${dbc.escape(data.SCHD_TP)}
+          , ${dbc.escape(data.SCHD_SEQ)}
+          , ${dbc.escape(data.mbrNm)}
+          , ${dbc.escape(data.SCHD_MEMO_CNTNTS)}
+          , DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
+          , ${dbc.escape(data.userData.seq)}
+          , 1
+        )
+        `
+        logger.info("addStepQuery", {message: query})
+        return query
+    },
+
+    clsSchdMemo : function (data) {
+        return `
+        UPDATE SCHD_MEMO
+           SET SCHD_MEMO_USE_TF = 0
+             , SCHD_MEMO_DEL_DTM = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
+             , SCHD_MEMO_DEL_MBR_SEQ = ${dbc.escape(data.userData.seq)}
+         WHERE 1 = 1
+           AND SCHD_MEMO_SEQ = ${dbc.escape(data.SCHD_MEMO_SEQ)}
+           AND SCHD_TP = ${dbc.escape(data.SCHD_TP)}
+        `
+    },
+    getSchdMemos : function (data) {
+        return `
+        SELECT 
+            M.SCHD_MEMO_SEQ             AS MEMO_SEQ         -- MEMO KEY
+          , M.SCHD_SEQ                  AS SCHD_SEQ         -- 스케줄 SEQ
+          , M.SCHD_TP                   AS SCHD_TP          -- 스케줄 TYPE 0: 미팅, 1: 프로젝트
+          , MB1.MBR_NM                  AS WRTR
+          , DATE_FORMAT(M.SCHD_MEMO_REG_DTM, '%Y-%m-%d %H:%i:%s')   AS MEMO_REG_DTM
+          , M.SCHD_MEMO_CNTNTS          AS MEMO_CNTNTS
+         FROM SCHD_MEMO M
+        INNER JOIN MBR MB1
+           ON MB1.MBR_SEQ = M.SCHD_MEMO_REG_MBR_SEQ
+        INNER JOIN MBR MB2
+           ON MB2.MBR_NM = M.SCHD_OWNER_MBR_NM
+        WHERE 1 = 1
+          AND M.SCHD_MEMO_USE_TF = 1
+          AND MB2.MBR_NM = '${data.mbrNm}'
+        `
+    }
 }
 
 

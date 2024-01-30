@@ -29,7 +29,7 @@ router
         let posts = ret.result[0]
         let memos = ret.result[1]
 
-        ret.result = util.makeTree(posts,memos)
+        ret.result = util.makeTree(posts,memos, 0)
         res.send(ret)
     })
 })  
@@ -63,7 +63,7 @@ router
             util.transaction(seqData,memoQuery.getMemosBySeqs)
             .then((ret) =>{
                 memos = ret.result
-                ret.result = util.makeTree(posts,memos)
+                ret.result = util.makeTree(posts,memos, 0)
                 res.send(ret)
             });
         }
@@ -108,7 +108,7 @@ router
             util.transaction(seqData,memoQuery.getMemosBySeqs)
             .then((ret) =>{
                 memos = ret.result
-                ret.result = util.makeTree(posts,memos)
+                ret.result = util.makeTree(posts,memos, 0)
                 res.send(ret)
             });
         }

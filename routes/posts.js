@@ -216,7 +216,7 @@ router
 
         // 라우트 호출 불가
         req.body.userData = {} // TS_CS-poster 계정
-        req.body.userData.seq = 57
+        req.body.userData.seq = 33 // 개발 : 57, 운영 : 33
         // ID : TS_CS-poster
         // PW : 123456
 

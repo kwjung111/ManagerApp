@@ -203,6 +203,40 @@ router
 
 })
 
+/**
+ * 토큰 없이 sr 등록하는 api
+ * 회사 IP 주소로만 접근 가능
+ * */
+.post("/noToken/post", (req, res) =>{
+    const allowedIPPrefix = "10.28.100.";
+    const clientIP = req.ip.substring(7,17)
+    if (clientIP.startsWith(allowedIPPrefix) || req.ip == '::1') {
+        // pass
+        /* ========================== IP 검증 통과 ========================== */
+
+        // 라우트 호출 불가
+        req.body.userData = {} // TS_CS-poster 계정
+        req.body.userData.seq = 57
+        // ID : TS_CS-poster
+        // PW : 123456
+
+        util.transaction(req,postQuery.addPost)
+            .then( (ret)=> {
+                ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
+                res.send(ret)
+                if(ret.ok == true){
+                    const event = new wsJson("event")
+                        .event("POST","posts",ret.result.insertId,'-',req.body.content) /* 수/발신 UID 다르면 noti 띄우는 방식 */
+                    broadcast(event)
+                }
+            })
+    } else {
+        console.log("bad")
+        console.log(req.ip)
+        res.status(403).send("접근금지"); // 금지된 응답을 보냄
+    }
+})
+
 
 //validators
 function getPostByMonthValidator(req){

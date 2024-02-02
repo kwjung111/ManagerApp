@@ -127,6 +127,21 @@ router
       res.send(ret);
     });
   })
+
+    .get("/checkNm/:name", (req, res) => {
+      const { name } = req.params;
+      util.transaction(req, authQuery.checkName)
+          .then((ret) => {
+            let [chkRst] = ret.result;
+            if(chkRst) {
+              ret.result = true;
+            } else {
+              ret.result = false;
+            }
+            res.send(ret);
+          })
+    })
+
   //로그인 페이지 진입 시, 토큰 유효성 검사
   .get("/chkToken", async (req, res) => {
     const token = req.headers.authorization;

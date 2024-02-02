@@ -15,6 +15,22 @@ const authQuery = {
       logger.info('checkId',{message:query})
       return query
     },
+    checkName: function (data) {
+      const query = `
+      SELECT 
+      MBR_SEQ AS SEQ,
+      MBR_ID AS ID,
+      MBR_NM AS NAME,
+      MBR_PWD AS PWD,
+      MBR_SALT AS SALT,
+      MBR_ROLE AS ROLE
+      FROM MBR
+      WHERE MBR_NM = ${dbc.escape(data.name)}
+      `
+      logger.info('checkName', {message: query})
+        return query
+    },
+
     signUp : function(data){
         const query = `
         INSERT INTO MBR(

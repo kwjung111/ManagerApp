@@ -100,20 +100,26 @@ app.get('/identifier',(req,res)=>{
 //미들웨어 Access Token 검증 코드
 
 function verifyToken(req, res, next) {
-  const token = req.headers.authorization;
 
-  if (!token) {
-    return res.status(403).json({ message: "토큰 없음" });
-  }
+  if(req.url=="/posts/noToken/post"){
+    next()
+  } else {
 
-  jwt.verify(token, process.env.PRV_KEY, (err, decoded) => {
-    if (err) {
-      logger.error('tokenVerifyError',{message:`token : ${token} err: ${err}`})
-      return res.status(401).json({ message: "Access Token 검증 실패" });
-    } else {
-      req.body.userData = decoded;
-      next();
+    const token = req.headers.authorization;
+
+    if (!token) {
+      return res.status(403).json({message: "토큰 없음"});
     }
-  });
+
+    jwt.verify(token, process.env.PRV_KEY, (err, decoded) => {
+      if (err) {
+        logger.error('tokenVerifyError', {message: `token : ${token} err: ${err}`})
+        return res.status(401).json({message: "Access Token 검증 실패"});
+      } else {
+        req.body.userData = decoded;
+        next();
+      }
+    });
+  }
 }
 

@@ -24,7 +24,7 @@ const query = {
         ${dbc.escape(data.content)},
         ${dbc.escape(data.inCharge)},
         TRUE,
-        ${dbc.escape(data.postCd)},
+        ${dbc.escape(data.postCd)}, -- 일반/긴급
         ${dbc.escape(data.userData.seq)},
         NOW(),
         NOW())`

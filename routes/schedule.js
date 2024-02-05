@@ -214,14 +214,32 @@ router
 })
 
 .get("/all", (req, res) => {
-    util.transactions(req, [mbrQuery.getMbrs, scheduleQuery.getAllSchd], true)
+    // schds <- 단계, 메모
+    // mbrs <- schds
+
+    // step 01 :: 프로젝트 스케줄에 단계 붙이기. 스케줄 - SCHD_TP = '1', SCHD_SEQ // 단계 - PRJ_SEQ
+    // step 02 :: 전체 스케줄에 메모 붙이기
+    // step 03 :: 멤버와 스케줄 붙이기
+
+
+    util.transactions(req, [mbrQuery.getMbrs, scheduleQuery.getAllSchd, stepQuery.allsteps, memoQuery.getAllSchdMemos], true)
         .then((ret) => {
             let mrbs = ret.result[0]
             let schds = ret.result[1]
+            let steps = ret.result[2]
+            let memos = ret.result[3]
 
-            // 스케줄이 있는 직원만 반환하기 위해 재 필터링
-            let tree = util.makeTree(mrbs, schds, 3)
-            let tmp = tree.filter((mbr) => {
+
+            // step 01 :: 프로젝트 스케줄에 단계 붙이기
+            let tree_step01 = util.makeTree(schds, steps, 4)
+
+            // step 02 :: 스케줄에 메모 붙이기
+            let tree_step02 = util.makeTree(tree_step01, memos, 1)
+
+            // step 03 :: 멤버와 스케줄 붙이기
+            let tree_step03 = util.makeTree(mrbs, tree_step02, 3)
+            // step 04 :: 스케줄이 있는 직원만 반환하기 위해 재 필터링
+            let tmp = tree_step03.filter((mbr) => {
                 return mbr.schds?.length != 0;
             })
 

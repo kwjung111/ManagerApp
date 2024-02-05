@@ -37,7 +37,7 @@ const util = {
         acc.push(curPost);
         return acc;
       }, []);
-    } else {    // SCHD - 전체 직원 스케줄 조회
+    } else if (treeTp == 3) {    // SCHD - 전체 직원 스케줄 조회
       return posts.reduce((acc, cur) => {
         let curPost = util.deepCopy(cur);
         const matchingMemos = memos.filter((memo) => {
@@ -45,6 +45,18 @@ const util = {
         });
         if (matchingMemos != null) {
           curPost.schds = matchingMemos;
+        }
+        acc.push(curPost);
+        return acc;
+      }, []);
+    } else if (treeTp == 4) { // 프로젝트에 단계 붙이기
+      return posts.reduce((acc, cur) => {
+        let curPost = util.deepCopy(cur);
+        const matchingMemos = memos.filter((memo) => {
+          return cur.SCHD_TP == '1' && cur.SCHD_SEQ == memo.PRJ_SEQ;
+        });
+        if (matchingMemos != null) {
+          curPost.steps = matchingMemos;
         }
         acc.push(curPost);
         return acc;

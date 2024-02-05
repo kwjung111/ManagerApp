@@ -122,6 +122,25 @@ WHERE 1=1
           AND MB2.MBR_NM = '${data.mbrNm}'
         ORDER BY M.SCHD_MEMO_REG_DTM ASC
         `
+    },
+    getAllSchdMemos : function (data) {
+        return `
+        SELECT 
+            M.SCHD_MEMO_SEQ             AS MEMO_SEQ         -- MEMO KEY
+          , M.SCHD_SEQ                  AS SCHD_SEQ         -- 스케줄 SEQ
+          , M.SCHD_TP                   AS SCHD_TP          -- 스케줄 TYPE 0: 미팅, 1: 프로젝트
+          , MB1.MBR_NM                  AS WRTR
+          , DATE_FORMAT(M.SCHD_MEMO_REG_DTM, '%Y-%m-%d %H:%i:%s')   AS MEMO_REG_DTM
+          , M.SCHD_MEMO_CNTNTS          AS MEMO_CNTNTS
+         FROM SCHD_MEMO M
+        INNER JOIN MBR MB1
+           ON MB1.MBR_SEQ = M.SCHD_MEMO_REG_MBR_SEQ
+        INNER JOIN MBR MB2
+           ON MB2.MBR_NM = M.SCHD_OWNER_MBR_NM
+        WHERE 1 = 1
+          AND M.SCHD_MEMO_USE_TF = 1
+        ORDER BY M.SCHD_MEMO_REG_DTM ASC
+        `
     }
 }
 

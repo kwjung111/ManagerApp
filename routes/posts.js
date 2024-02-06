@@ -5,6 +5,9 @@ const postQuery = require("../queries/postQuery.js")
 const memoQuery = require("../queries/memoQuery.js")
 const {wsJson,broadcast} = require('../wss.js')
 const logger = require("../logger.js")
+const CryptoJS = require("crypto-js")
+
+
 
 router
 .get("/",(req,res)=>{
@@ -208,33 +211,52 @@ router
  * 회사 IP 주소로만 접근 가능
  * */
 .post("/noToken/post", (req, res) =>{
-    const allowedIPPrefix = "10.28.100.";
-    const clientIP = req.ip.substring(7,17)
-    if (clientIP.startsWith(allowedIPPrefix) || req.ip == '::1') {
-        // pass
-        /* ========================== IP 검증 통과 ========================== */
-
-        // 라우트 호출 불가
-        req.body.userData = {} // TS_CS-poster 계정
-        req.body.userData.seq = 33 // 개발 : 57, 운영 : 33
-        // ID : TS_CS-poster
-        // PW : 123456
-
-        util.transaction(req,postQuery.addPost)
-            .then( (ret)=> {
-                ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
-                res.send(ret)
-                if(ret.ok == true){
-                    const event = new wsJson("event")
-                        .event("POST","posts",ret.result.insertId,'-',req.body.content) /* 수/발신 UID 다르면 noti 띄우는 방식 */
-                    broadcast(event)
+    // let encryptDATA = CryptoJS.AES.encrypt(JSON.stringify(req.body), process.env.DECRYPT_KEY).toString();
+    let decryptBYTE = CryptoJS.AES.decrypt(req.body.data.toString(), process.env.DECRYPT_KEY);
+    let decryptDATA ='';
+    try {
+        decryptDATA = JSON.parse(decryptBYTE.toString(CryptoJS.enc.Utf8))
+    } catch (e){
+        let ret = {
+            "ok": false,
+            "msg": "FORBIDDEN",
+            "statusCode": "404",
+            "result": [
+                {
+                    "message": "복호화 불가"
                 }
-            })
-    } else {
-        console.log("bad")
-        console.log(req.ip)
-        res.status(403).send("접근금지"); // 금지된 응답을 보냄
+            ]
+        }
+        res.send(ret)
     }
+
+    req.body = decryptDATA
+    req.body.userData = {} // TS_CS-poster 계정
+    req.body.userData.seq = process.env.BRD_POSTER
+
+    util.transaction(req,postQuery.addPost)
+        .then( (ret)=> {
+            ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
+            res.send(ret)
+            if(ret.ok == true){
+                const event = new wsJson("event")
+                    .event("POST","posts",ret.result.insertId,'-',req.body.content) /* 수/발신 UID 다르면 noti 띄우는 방식 */
+                broadcast(event)
+            }
+        })
+        .catch((err) => {
+            let ret = {
+                "ok": false,
+                "msg": "FORBIDDEN",
+                "statusCode": "404",
+                "result": [
+                    {
+                        "message": "쿼리 수행 불가"
+                    }
+                ]
+            }
+            res.send(ret)
+        })
 })
 
 

@@ -208,7 +208,7 @@ router
 
 /**
  * 토큰 없이 sr 등록하는 api
- * 회사 IP 주소로만 접근 가능
+ * 대칭키 암호화 AES 사용
  * */
 .post("/noToken/post", (req, res) =>{
     // let encryptDATA = CryptoJS.AES.encrypt(JSON.stringify(req.body), process.env.DECRYPT_KEY).toString();

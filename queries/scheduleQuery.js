@@ -219,6 +219,7 @@ const scheduleQuery = {
            ON MB.MBR_SEQ = M.MTNG_REG_MBR_SEQ
         INNER JOIN CM_CD_ITM CM
            ON CM.CM_GRP_CD = '4'
+          AND CM.CM_ITM_CD = M.MTNG_PRGSS_CD
         WHERE 1 = 1
           AND MTNG_USE_TF = 1
           AND MTNG_PRGSS_CD = 1
@@ -243,6 +244,7 @@ const scheduleQuery = {
            ON MB.MBR_SEQ = P.PRJ_REG_MBR_SEQ
         INNER JOIN CM_CD_ITM CM
            ON CM.CM_GRP_CD = '4'
+          AND CM.CM_ITM_CD = P.PRJ_PRGSS_CD
         WHERE 1 = 1
           AND PRJ_USE_TF = 1
           AND PRJ_PRGSS_CD = 1

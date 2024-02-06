@@ -209,6 +209,7 @@ const scheduleQuery = {
           , DATE_FORMAT(MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')     AS SCHD_STRT_DTM
           , DATE_FORMAT(MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')      AS SCHD_END_DTM
           , MTNG_CNTNTS                             AS SCHD_CNTNTS
+          , DATE_FORMAT(IFNULL(MTNG_MOD_DTM, MTNG_REG_DTM), 'YYYY-MM-DD HH:II:SS')      AS SCHD_MOD_DTM
          FROM MTNG
         WHERE 1 = 1
           AND MTNG_USE_TF = 1
@@ -224,6 +225,7 @@ const scheduleQuery = {
           , DATE_FORMAT(PRJ_STRT_DTM, '%y년 %m월 %d일')               AS SCHD_STRT_DTM
           , DATE_FORMAT(PRJ_END_DTM, '%y년 %m월 %d일')                AS SCHD_END_DTM
           , PRJ_CNTNTS                              AS SCHD_CNTNTS
+          , IFNULL(PRJ_MOD_DTM, PRJ_REG_DTM)        AS SCHD_MOD_DTM
          FROM PRJ
         WHERE 1 = 1
           AND PRJ_USE_TF = 1

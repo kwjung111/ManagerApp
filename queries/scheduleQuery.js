@@ -201,32 +201,48 @@ const scheduleQuery = {
     getAllSchd : function (data) {
         return `
         SELECT
-            MTNG_REG_MBR_SEQ                        AS REG_MBR_SEQ
-          , '0'                                     AS SCHD_TP
-          , MTNG_SEQ                                AS SCHD_SEQ
-          , MTNG_NO                                 AS SCHD_NO
-          , MTNG_PIN_YN                             AS SCHD_PIN_YN
-          , DATE_FORMAT(MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')     AS SCHD_STRT_DTM
-          , DATE_FORMAT(MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')      AS SCHD_END_DTM
-          , MTNG_CNTNTS                             AS SCHD_CNTNTS
-          , DATE_FORMAT(IFNULL(MTNG_MOD_DTM, MTNG_REG_DTM), 'YYYY-MM-DD HH:II:SS')      AS SCHD_MOD_DTM
-         FROM MTNG
+            M.MTNG_REG_MBR_SEQ                        AS REG_MBR_SEQ
+          , '0'                                       AS SCHD_TP
+          , M.MTNG_SEQ                                AS SCHD_SEQ
+          , M.MTNG_NO                                 AS SCHD_NO
+          , M.MTNG_PIN_YN                             AS SCHD_PIN_YN
+          , M.MTNG_PRTC                               AS SCHD_PRTC        -- 참여자
+          , CM.CM_ITM_NM                              AS SCHD_PRGSS_CD    -- 스케줄 상태
+          , ''                                        AS SCHD_PRGSS_PRCNT -- 진척도
+          , DATE_FORMAT(M.MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')     AS SCHD_STRT_DTM
+          , DATE_FORMAT(M.MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')      AS SCHD_END_DTM
+          , M.MTNG_CNTNTS                             AS SCHD_CNTNTS
+          , DATE_FORMAT(IFNULL(M.MTNG_MOD_DTM, M.MTNG_REG_DTM), 'YYYY-MM-DD HH:II:SS')      AS SCHD_MOD_DTM
+          , MB.MBR_NM
+         FROM MTNG M
+        INNER JOIN MBR MB
+           ON MB.MBR_SEQ = M.MTNG_REG_MBR_SEQ
+        INNER JOIN CM_CD_ITM CM
+           ON CM.CM_GRP_CD = '4'
         WHERE 1 = 1
           AND MTNG_USE_TF = 1
           AND MTNG_PRGSS_CD = 1
           AND MTNG_END_DTM > NOW()
         UNION ALL
         SELECT
-            PRJ_REG_MBR_SEQ                         AS REG_MBR_SEQ
-          , '1'                                     AS SCHD_TP
-          , PRJ_SEQ                                 AS SCHD_SEQ
-          , PRJ_NO                                  AS SCHD_NO
-          , PRJ_PIN_YN                              AS SCHD_PIN_YN
-          , DATE_FORMAT(PRJ_STRT_DTM, '%y년 %m월 %d일')               AS SCHD_STRT_DTM
-          , DATE_FORMAT(PRJ_END_DTM, '%y년 %m월 %d일')                AS SCHD_END_DTM
-          , PRJ_CNTNTS                              AS SCHD_CNTNTS
-          , IFNULL(PRJ_MOD_DTM, PRJ_REG_DTM)        AS SCHD_MOD_DTM
-         FROM PRJ
+            P.PRJ_REG_MBR_SEQ                         AS REG_MBR_SEQ
+          , '1'                                       AS SCHD_TP
+          , P.PRJ_SEQ                                 AS SCHD_SEQ
+          , P.PRJ_NO                                  AS SCHD_NO
+          , P.PRJ_PIN_YN                              AS SCHD_PIN_YN
+          , P.PRJ_PRTC                                AS SCHD_PRTC    -- 참여자
+          , CM.CM_ITM_NM                              AS SCHD_PRGSS_CD    -- 스케줄 상태
+          , P.PRJ_PRGSS_PRCNT                         AS SCHD_PRGSS_PRCNT -- 진척도
+          , DATE_FORMAT(P.PRJ_STRT_DTM, '%y년 %m월 %d일')               AS SCHD_STRT_DTM
+          , DATE_FORMAT(P.PRJ_END_DTM, '%y년 %m월 %d일')                AS SCHD_END_DTM
+          , P.PRJ_CNTNTS                              AS SCHD_CNTNTS
+          , IFNULL(P.PRJ_MOD_DTM, P.PRJ_REG_DTM)        AS SCHD_MOD_DTM
+          , MB.MBR_NM
+         FROM PRJ P
+        INNER JOIN MBR MB
+           ON MB.MBR_SEQ = P.PRJ_REG_MBR_SEQ
+        INNER JOIN CM_CD_ITM CM
+           ON CM.CM_GRP_CD = '4'
         WHERE 1 = 1
           AND PRJ_USE_TF = 1
           AND PRJ_PRGSS_CD = 1

@@ -31,6 +31,36 @@ const query = {
     logger.info("addPostQuery",{message:query})
     return query},
 
+    // 대기 사유 같이 저장하기 위해 insert문 새로 넣음
+    addPostEncypt : function(data){
+        const query = `INSERT INTO BRD (
+        BRD_NO,
+        BRD_PRGSS_TF,
+        BRD_CTNTS,
+        BRD_IN_CHRG,
+        BRD_USE_TF,
+        BRD_POST_CD,
+        REG_MBR_SEQ,
+        BRD_RSN_PNDNG,
+        BRD_ACT_STRT_DTM,
+        BRD_REG_DTM
+        )VALUES(
+        (SELECT COUNT(0) + 1 FROM
+        BRD brd
+        WHERE 	
+        brd.BRD_REG_DTM >= DATE_FORMAT(CURRENT_DATE(), '%Y-%m-01')
+        ),
+        ${dbc.escape(data.prgssTF)},
+        ${dbc.escape(data.content)},
+        ${dbc.escape(data.inCharge)},
+        TRUE,
+        1, -- 일반/긴급
+        ${dbc.escape(data.userData.seq)},
+        ${dbc.escape(data.rsnPndng)},  -- 대기사유
+        NOW(),
+        NOW())`
+        logger.info("addPostQuery",{message:query})
+        return query},
     // 게시물 논리적 삭제
     removePost : function(data){
         return `UPDATE BRD 

@@ -212,6 +212,8 @@ router
  * */
 .post("/noToken/post", (req, res) =>{
     // let encryptDATA = CryptoJS.AES.encrypt(JSON.stringify(req.body), process.env.DECRYPT_KEY).toString();
+    // res.send(encryptDATA)
+
     let decryptBYTE = CryptoJS.AES.decrypt(req.body.data.toString(), process.env.DECRYPT_KEY);
     let decryptDATA ='';
     try {
@@ -231,10 +233,11 @@ router
     }
 
     req.body = decryptDATA
+
     req.body.userData = {} // TS_CS-poster 계정
     req.body.userData.seq = process.env.BRD_POSTER
 
-    util.transaction(req,postQuery.addPost)
+    util.transaction(req,postQuery.addPostEncypt)
         .then( (ret)=> {
             ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
             res.send(ret)

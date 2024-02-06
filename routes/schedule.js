@@ -233,13 +233,21 @@ router
             // step 01 :: 프로젝트 스케줄에 단계 붙이기
             let tree_step01 = util.makeTree(schds, steps, 4)
 
-            // step 02 :: 스케줄에 메모 붙이기
-            let tree_step02 = util.makeTree(tree_step01, memos, 1)
+            //  메모를 스스로 붙여보아요 하하 재밌겠다
+            let obj_bf = util.makeTree(schds, steps, 4)
+            let obj_af = []
+            obj_bf.map((schd)=> {
+                let schdMemos = memos.filter(memo => {
+                    return (memo.SCHD_SEQ == schd.SCHD_SEQ && memo.SCHD_TP == schd.SCHD_TP);
+                })
+                schd.memos = schdMemos
 
-            // step 03 :: 멤버와 스케줄 붙이기
-            let tree_step03 = util.makeTree(mrbs, tree_step02, 3)
-            // step 04 :: 스케줄이 있는 직원만 반환하기 위해 재 필터링
-            let tmp = tree_step03.filter((mbr) => {
+                obj_af.push(schd)
+            })
+
+            // step 03 :: 스케줄이 있는 직원만 반환하기 위해 재 필터링
+            let tree = util.makeTree(mrbs, obj_af, 3)
+            let tmp = tree.filter((mbr) => {
                 return mbr.schds?.length != 0;
             })
 

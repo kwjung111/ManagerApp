@@ -209,10 +209,10 @@ const scheduleQuery = {
           , M.MTNG_PRTC                               AS SCHD_PRTC        -- 참여자
           , CM.CM_ITM_NM                              AS SCHD_PRGSS_CD    -- 스케줄 상태
           , ''                                        AS SCHD_PRGSS_PRCNT -- 진척도
-          , DATE_FORMAT(M.MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')     AS SCHD_STRT_DTM
-          , DATE_FORMAT(M.MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')      AS SCHD_END_DTM
+          , DATE_FORMAT(M.MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')                       AS SCHD_STRT_DTM
+          , DATE_FORMAT(M.MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')                        AS SCHD_END_DTM
           , M.MTNG_CNTNTS                             AS SCHD_CNTNTS
-          , IFNULL(M.MTNG_MOD_DTM, M.MTNG_REG_DTM)        AS SCHD_MOD_DTM
+          , DATE_FORMAT(IFNULL(M.MTNG_MOD_DTM, M.MTNG_REG_DTM), '%Y-%m-%d %H:%i')        AS SCHD_MOD_DTM
           , MB.MBR_NM
          FROM MTNG M
         INNER JOIN MBR MB
@@ -234,10 +234,10 @@ const scheduleQuery = {
           , P.PRJ_PRTC                                AS SCHD_PRTC    -- 참여자
           , CM.CM_ITM_NM                              AS SCHD_PRGSS_CD    -- 스케줄 상태
           , P.PRJ_PRGSS_PRCNT                         AS SCHD_PRGSS_PRCNT -- 진척도
-          , DATE_FORMAT(P.PRJ_STRT_DTM, '%y년 %m월 %d일')               AS SCHD_STRT_DTM
-          , DATE_FORMAT(P.PRJ_END_DTM, '%y년 %m월 %d일')                AS SCHD_END_DTM
+          , DATE_FORMAT(P.PRJ_STRT_DTM, '%y년 %m월 %d일')                               AS SCHD_STRT_DTM
+          , DATE_FORMAT(P.PRJ_END_DTM, '%y년 %m월 %d일')                                AS SCHD_END_DTM
           , P.PRJ_CNTNTS                              AS SCHD_CNTNTS
-          , IFNULL(P.PRJ_MOD_DTM, P.PRJ_REG_DTM)        AS SCHD_MOD_DTM
+          , DATE_FORMAT(IFNULL(P.PRJ_MOD_DTM, P.PRJ_REG_DTM), '%Y-%m-%d %H:%i')        AS SCHD_MOD_DTM
           , MB.MBR_NM
          FROM PRJ P
         INNER JOIN MBR MB

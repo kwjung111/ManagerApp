@@ -212,7 +212,7 @@ const scheduleQuery = {
           , DATE_FORMAT(M.MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')     AS SCHD_STRT_DTM
           , DATE_FORMAT(M.MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')      AS SCHD_END_DTM
           , M.MTNG_CNTNTS                             AS SCHD_CNTNTS
-          , DATE_FORMAT(IFNULL(M.MTNG_MOD_DTM, M.MTNG_REG_DTM), 'YYYY-MM-DD HH:II:SS')      AS SCHD_MOD_DTM
+          , IFNULL(M.MTNG_MOD_DTM, M.MTNG_REG_DTM)        AS SCHD_MOD_DTM
           , MB.MBR_NM
          FROM MTNG M
         INNER JOIN MBR MB

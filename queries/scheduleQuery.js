@@ -53,6 +53,7 @@ const scheduleQuery = {
           , DATE_FORMAT(M.MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')     AS SCHD_END_DTM    -- (기간) 종료시간
           , M.MTNG_TOT_TIME              AS SCHD_TOT_TIME                   -- 총 시간(기간)
           , M.MTNG_CNTNTS                AS SCHD_CNTNTS                     -- 내용
+          , ''                           AS SCHD_WBS_LINK                   -- 프로젝트 WBS 링크
           , DATE_FORMAT(M.MTNG_REG_DTM, '%Y-%m-%d %H:%i')  AS SCHD_REG_DTM  -- 등록 일자
           , DATE_FORMAT(IFNULL(M.MTNG_MOD_DTM, M.MTNG_REG_DTM), '%Y-%m-%d %H:%i')  AS SCHD_MOD_DTM
           , MB.MBR_NM                                      AS SCHD_WRTR
@@ -82,10 +83,11 @@ const scheduleQuery = {
             END                         AS SCHD_DDLN_OVR                   --          0 : 정상, 1: 미완료+기한 지남
           , P.PRJ_PRGSS_PRCNT           AS SCHD_PRGSS_PRCNT                -- 진척도
           , DATE_FORMAT(P.PRJ_STRT_DTM, '%y년 %m월 %d일')   AS SCHD_STRT_DTM    -- (기간) 시작시간
-          , DATE_FORMAT(P.PRJ_END_DTM, '%y년 %m월 %d일')    AS SCHD_END_DTM    -- (기간) 종료시간
+          , DATE_FORMAT(P.PRJ_END_DTM, '%y년 %m월 %d일')    AS SCHD_END_DTM     -- (기간) 종료시간
           , P.PRJ_TOT_TIME              AS SCHD_TOT_TIME                   -- 총 시간(기간)
           , P.PRJ_CNTNTS                AS SCHD_CNTNTS                     -- 내용
-          , DATE_FORMAT(P.PRJ_REG_DTM, '%Y-%m-%d %H:%i')   AS SCHD_REG_DTM  -- 등록 일자
+          , IFNULL(P.PRJ_WBS_LINK, '')                     AS SCHD_WBS_LINK    -- 프로젝트 WBS 링크
+          , DATE_FORMAT(P.PRJ_REG_DTM, '%Y-%m-%d %H:%i')   AS SCHD_REG_DTM     -- 등록 일자
           , DATE_FORMAT(IFNULL(P.PRJ_MOD_DTM, P.PRJ_REG_DTM), '%Y-%m-%d %H:%i')  AS SCHD_MOD_DTM
           , MB.MBR_NM                                      AS SCHD_WRTR
         FROM PRJ P
@@ -117,6 +119,7 @@ const scheduleQuery = {
           , DATE_FORMAT(M.MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')     AS SCHD_END_DTM    -- (기간) 종료시간
           , M.MTNG_TOT_TIME              AS SCHD_TOT_TIME                   -- 총 시간(기간)
           , M.MTNG_CNTNTS                AS SCHD_CNTNTS                     -- 내용
+          , ''                           AS SCHD_WBS_LINK                   -- 프로젝트 WBS 링크
           , DATE_FORMAT(M.MTNG_REG_DTM, '%Y-%m-%d %H:%i')  AS SCHD_REG_DTM  -- 등록 일자
           , DATE_FORMAT(IFNULL(M.MTNG_MOD_DTM, M.MTNG_REG_DTM), '%Y-%m-%d %H:%i')  AS SCHD_MOD_DTM
           , MB.MBR_NM                    AS SCHD_WRTR
@@ -146,6 +149,7 @@ const scheduleQuery = {
           , DATE_FORMAT(P.PRJ_END_DTM, '%y년 %m월 %d일')     AS SCHD_END_DTM    -- (기간) 종료시간
           , P.PRJ_TOT_TIME              AS SCHD_TOT_TIME                   -- 총 시간(기간)
           , P.PRJ_CNTNTS                AS SCHD_CNTNTS                     -- 내용
+          , IFNULL(P.PRJ_WBS_LINK, '')                    AS SCHD_WBS_LINK -- 프로젝트 WBS 링크
           , DATE_FORMAT(P.PRJ_REG_DTM, '%Y-%m-%d %H:%i')  AS SCHD_REG_DTM  -- 등록 일자
           , DATE_FORMAT(IFNULL(P.PRJ_MOD_DTM, P.PRJ_REG_DTM), '%Y-%m-%d %H:%i')  AS SCHD_MOD_DTM
           , MB.MBR_NM                                      AS SCHD_WRTR
@@ -212,6 +216,7 @@ const scheduleQuery = {
           , DATE_FORMAT(M.MTNG_STRT_DTM, '%y년 %m월 %d일 %H시 %i분')                       AS SCHD_STRT_DTM
           , DATE_FORMAT(M.MTNG_END_DTM, '%y년 %m월 %d일 %H시 %i분')                        AS SCHD_END_DTM
           , M.MTNG_CNTNTS                             AS SCHD_CNTNTS
+          , ''                                        AS SCHD_WBS_LINK                   -- 프로젝트 WBS 링크
           , DATE_FORMAT(IFNULL(M.MTNG_MOD_DTM, M.MTNG_REG_DTM), '%Y-%m-%d %H:%i')        AS SCHD_MOD_DTM
           , MB.MBR_NM
          FROM MTNG M
@@ -237,6 +242,7 @@ const scheduleQuery = {
           , DATE_FORMAT(P.PRJ_STRT_DTM, '%y년 %m월 %d일')                               AS SCHD_STRT_DTM
           , DATE_FORMAT(P.PRJ_END_DTM, '%y년 %m월 %d일')                                AS SCHD_END_DTM
           , P.PRJ_CNTNTS                              AS SCHD_CNTNTS
+          , IFNULL(P.PRJ_WBS_LINK, '')                AS SCHD_WBS_LINK                   -- 프로젝트 WBS 링크
           , DATE_FORMAT(IFNULL(P.PRJ_MOD_DTM, P.PRJ_REG_DTM), '%Y-%m-%d %H:%i')        AS SCHD_MOD_DTM
           , MB.MBR_NM
          FROM PRJ P

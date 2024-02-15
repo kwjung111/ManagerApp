@@ -111,19 +111,20 @@ const query = {
         return `
         SELECT 
             P.PRJ_SEQ                               AS SCHD_SEQ
-          , '1'                                     AS SCHD_TP  -- 0: 미팅, 1: 프로젝트
-          , P.PRJ_NO                                AS SCHD_NO  -- 개인 스케줄 번호 넘버링 값
-          , P.PRJ_PIN_YN                            AS SCHD_PIN_YN  -- 상단 고정 여부
-          , P.PRJ_PRTC                              AS SCHD_PRTC    -- 참여자
-          , CM.CM_ITM_NM                            AS SCHD_PRGSS_CD    -- 스케줄 상태
-          , P.PRJ_PRGSS_PRCNT                       AS SCHD_PRGSS_PRCNT -- 진척도
-          , DATE_FORMAT(P.PRJ_STRT_DTM, '%y년 %m월 %d일')  AS SCHD_STRT_DTM -- 기간 FROM
-          , DATE_FORMAT(P.PRJ_END_DTM, '%y년 %m월 %d일')   AS SCHD_END_DTM  -- 기간 TO
-          , P.PRJ_TOT_TIME                          AS SCHD_TOT_TIME -- 총 소요 시간
-          , P.PRJ_CNTNTS                            AS SCHD_CNTNTS  -- 스케줄 내용
-          , DATE_FORMAT(P.PRJ_REG_DTM, '%Y-%m-%d %H:%i')           AS SCHD_REG_DTM  -- 등록 일자
+          , '1'                                     AS SCHD_TP                  -- 0: 미팅, 1: 프로젝트
+          , P.PRJ_NO                                AS SCHD_NO                  -- 개인 스케줄 번호 넘버링 값
+          , P.PRJ_PIN_YN                            AS SCHD_PIN_YN              -- 상단 고정 여부
+          , P.PRJ_PRTC                              AS SCHD_PRTC                -- 참여자
+          , CM.CM_ITM_NM                            AS SCHD_PRGSS_CD            -- 스케줄 상태
+          , P.PRJ_PRGSS_PRCNT                       AS SCHD_PRGSS_PRCNT         -- 진척도
+          , DATE_FORMAT(P.PRJ_STRT_DTM, '%y년 %m월 %d일')              AS SCHD_STRT_DTM      -- 기간 FROM
+          , DATE_FORMAT(P.PRJ_END_DTM, '%y년 %m월 %d일')               AS SCHD_END_DTM       -- 기간 TO
+          , P.PRJ_TOT_TIME                          AS SCHD_TOT_TIME            -- 총 소요 시간
+          , P.PRJ_CNTNTS                            AS SCHD_CNTNTS              -- 스케줄 내용
+          , IFNULL(P.PRJ_WBS_LINK, '')              AS SCHD_WBS_LINK            -- 프로젝트 WBS 링크
+          , DATE_FORMAT(P.PRJ_REG_DTM, '%Y-%m-%d %H:%i')              AS SCHD_REG_DTM       -- 등록 일자
           , DATE_FORMAT(IFNULL(P.PRJ_MOD_DTM, P.PRJ_REG_DTM), '%Y-%m-%d %H:%i')  AS SCHD_MOD_DTM
-          , MB.MBR_NM                               AS SCHD_WRTR    -- 작성자(등록자)
+          , MB.MBR_NM                               AS SCHD_WRTR                -- 작성자(등록자)
         FROM PRJ P
         INNER JOIN MBR MB
            ON MB.MBR_SEQ = P.PRJ_REG_MBR_SEQ
@@ -148,6 +149,7 @@ const query = {
                         , PRJ_END_DTM
                         , PRJ_TOT_TIME
                         , PRJ_CNTNTS
+                        , PRJ_WBS_LINK
                         , PRJ_REG_DTM
                         , PRJ_REG_MBR_SEQ
                         , PRJ_USE_TF
@@ -174,6 +176,7 @@ const query = {
                   , DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_END_DTM)}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s')
                   , DATEDIFF(DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_END_DTM)}, ' 23:59:59'), '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(CONCAT(${dbc.escape(data.SCHD_STRT_DTM)},' 00:00:00'), '%Y-%m-%d %H:%i:%s'))+1
                   , ${dbc.escape(data.SCHD_CNTNTS)}
+                  , ${dbc.escape(data.SCHD_WBS_LINK)}
                   , DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
                   , ${dbc.escape(data.userData.seq)}
                   , 1
@@ -195,6 +198,7 @@ const query = {
               , PRJ_TOT_TIME    = DATEDIFF(DATE_FORMAT(${dbc.escape(data.SCHD_END_DTM)}, '%Y-%m-%d %H:%i:%s'),
                                            DATE_FORMAT(${dbc.escape(data.SCHD_STRT_DTM)}, '%Y-%m-%d %H:%i:%s')) + 1
               , PRJ_CNTNTS      = ${dbc.escape(data.SCHD_CNTNTS)}
+              , PRJ_WBS_LINK    = ${dbc.escape(data.SCHD_WBS_LINK)}
               , PRJ_MOD_DTM     = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')
               , PRJ_MOD_MBR_SEQ = ${dbc.escape(data.userData.seq)}
             WHERE 1 = 1

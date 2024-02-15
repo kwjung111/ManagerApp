@@ -91,11 +91,8 @@ router
                     tmp.body = steps[i]
                     tmp.body.userData = findSeqAndName(req.headers.authorization)
                     tmp.body.SCHD_SEQ = ret.result.insertId
-                    console.log("왜 순서대로 insert 안하고 니 맘대로 하니?")
-                    console.log(tmp.body)
                     await util.transaction(tmp, stepQuery.addStep)
                         .then((ret) => {
-                            console.log(ret)
                         })
 
                 }
@@ -129,7 +126,7 @@ router
                 ret.result.schdSeq = req.body.SCHD_SEQ
                 ret.result.schdTp = 1
                 // 단계 수정 = (기존)단계 삭제 -> (수정내용)단계 생성
-                util.transaction(tmp, stepQuery.delStep)
+                await util.transaction(tmp, stepQuery.delStep)
                     .then((ret) => {
                         if(ret.ok == true){
                             console.log("기존 스텝 삭제완료")
@@ -142,7 +139,6 @@ router
                     tmp.body.SCHD_SEQ = ret.result.schdSeq
                     await util.transaction(tmp, stepQuery.addStep)
                         .then((ret) => {
-                            console.log(ret)
                         })
                 }
                 res.send(ret)

@@ -211,9 +211,16 @@ router
  * 대칭키 암호화 AES 사용
  * */
 .post("/noToken/post", (req, res) =>{
+    // let data = {
+    //     "content": "- 공개/암호 api 등록 테스트 입니다 -",
+    //     "inCharge": "-",
+    //     "postCd": "0",
+    //     "prgssTF": 2,
+    //     "rsnPndng": "대기사유 적어주세요",
+    //     "url": "ts-cs 시트 슬라이드 url들어올 자리"
+    // }
     // let encryptDATA = CryptoJS.AES.encrypt(JSON.stringify(req.body), process.env.DECRYPT_KEY).toString();
     // res.send(encryptDATA)
-
     let decryptBYTE = CryptoJS.AES.decrypt(req.body.data.toString(), process.env.DECRYPT_KEY);
     let decryptDATA ='';
     try {
@@ -236,9 +243,14 @@ router
 
     req.body.userData = {} // TS_CS-poster 계정
     req.body.userData.seq = process.env.BRD_POSTER
-
+    let memoReq = req;
     util.transaction(req,postQuery.addPostEncypt)
-        .then( (ret)=> {
+        .then(async (ret)=> {
+            memoReq.body.brdSeq = ret.result.insertId
+            await util.transaction(memoReq, memoQuery.addMemoEncypt)
+                .then((ret) => {
+                    // memo 등록 반환값
+                })
             ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
             res.send(ret)
             if(ret.ok == true){

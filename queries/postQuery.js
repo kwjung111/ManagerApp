@@ -90,8 +90,8 @@ const query = {
         `
     },
     //게시물 내용 조회
-    getPosts : function(data){
-        return `
+    getPosts : function(){
+        const query = `
         SELECT 
         CONCAT(DATE_FORMAT(brd.BRD_REG_DTM, '%m'),"-",brd.BRD_NO) AS BRD_NO,
 	    brd.BRD_SEQ,
@@ -115,10 +115,11 @@ const query = {
 	    AND brd.BRD_USE_TF = TRUE
         AND brd.BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
 	ORDER BY brd.BRD_SEQ DESC;`
+    return query
     },
     //게시물 상세 조회
-    getPost: function(data){
-        return `
+    getPost: function(){
+        const query =  `
         SELECT 
             brd.BRD_POST_CD		     -- 상태코드(긴급여부)
             ,brd.BRD_CTNTS		     -- 내용
@@ -136,7 +137,8 @@ const query = {
         LEFT OUTER JOIN BRD brd2
             ON brd2.BRD_SEQ = brd.BRD_END_FLLW_UP_SEQ
             AND brd2.BRD_USE_TF = TRUE
-        WHERE brd.BRD_SEQ = ${dbc.escape(data.postSeq)};`
+        WHERE brd.BRD_SEQ = ? ;`
+        return query
     },
     //미처리 건 
     getNotFinPosts: function(data){

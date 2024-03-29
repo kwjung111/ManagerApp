@@ -90,6 +90,38 @@ const util = {
     }
   },
 
+  transactionV2: async(data,query) => {
+    let conn = null;
+    let res = {}
+    try{
+      conn = await dbcPool.getConnection();
+      await conn.beginTransaction();
+    
+      const [result] = await conn.query(query, data)
+      await conn.commit();
+
+      res.ok = true;
+      res.result = result
+
+
+    } catch(err) {
+      logger.error('Query error', {message:err})
+      
+      if(conn){
+        await conn.rollback();
+      }
+
+      res.ok = false;
+      res.result = null;
+
+    } finally{
+      if(conn){
+        conn.release()
+      }
+    }
+    return res
+  },
+
   transaction: async (req, queries) => {
     let rt = {
       ok: false,  
@@ -118,7 +150,7 @@ const util = {
       rt.result = err.message;
 
       if (conn) {
-        await conn.rollbackTransaction();
+        await rollbackTransaction(conn);
       }
     }finally{
       if(conn){

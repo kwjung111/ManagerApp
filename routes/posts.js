@@ -3,6 +3,7 @@ const router = express.Router();
 const util = require("../util.js")
 const postQuery = require("../queries/postQuery.js")
 const memoQuery = require("../queries/memoQuery.js")
+const postDao = require('../dao/postDao.js')
 const {wsJson,broadcast} = require('../wss.js')
 const logger = require("../logger.js")
 const CryptoJS = require("crypto-js")
@@ -125,9 +126,16 @@ router
 
 
 .get("/:postSeq",(req,res)=>{
+    /*
     const { postSeq } = req.params;
-    util.transaction(req,postQuery.getPost)
+    util.transactionV2(postSeq,postQuery.getPost)
     .then((ret)=>{
+        res.send(ret)
+    })
+    */
+
+    //validation
+    postDao.getPost(req).then((ret) =>{
         res.send(ret)
     })
 })

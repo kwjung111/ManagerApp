@@ -77,6 +77,17 @@ router
 
 })
 
+.get("/commented", async (req, res) => {
+    util.transactions(req,[postQuery.getCommentedPost,memoQuery.getMemosAll],true)
+    .then((ret) => {
+        let posts = ret.result[0]
+        let memos = ret.result[1]
+
+        ret.result = util.makeTree(posts,memos, 0)
+        res.send(ret)
+    })
+})
+
 .get('/byMonth', (req,res) => {
 
     if(!getPostByMonthValidator(req)){

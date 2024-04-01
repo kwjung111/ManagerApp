@@ -56,6 +56,26 @@ const memoQuery = {
         WHERE 1=1 
          AND memo.MEMO_USE_TF  = TRUE`
      },
+    //전체 댓글 조회(1주알 제한 없음)
+    getMemosAll : function(){
+      return `
+      SELECT 
+          memo.MEMO_SEQ,
+          mbr.MBR_NM AS WRTR,
+          DATE_FORMAT(memo.MEMO_REG_DTM, '%Y-%m-%d %H:%i:%s') AS MEMO_REG_DTM,
+          memo.MEMO_CTNTS,
+          memo.BRD_SEQ
+      FROM MEMO memo
+      INNER JOIN BRD brd 
+       ON 1=1
+       AND brd.BRD_SEQ  = memo.BRD_SEQ 
+      AND brd.BRD_USE_TF = TRUE
+       INNER JOIN MBR mbr
+       on memo.REG_MBR_SEQ  = mbr.MBR_SEQ 
+       
+      WHERE 1=1 
+       AND memo.MEMO_USE_TF  = TRUE`
+   },
      //댓글 제거
     removeMemoQuery : function(data){
        return `UPDATE MEMO 

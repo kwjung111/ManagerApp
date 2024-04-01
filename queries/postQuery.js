@@ -138,6 +138,30 @@ const query = {
             AND brd2.BRD_USE_TF = TRUE
         WHERE brd.BRD_SEQ = ${dbc.escape(data.postSeq)};`
     },
+    //최근 30분 안에 댓글이 달린 게시물 조회
+    getCommentedPost: function(data){
+        return`
+        SELECT 
+            CONCAT(DATE_FORMAT(brd.BRD_REG_DTM, '%m'),"-",brd.BRD_NO) AS BRD_NO,
+            brd.BRD_SEQ,
+            brd.BRD_PRGSS_TF,
+            brd.BRD_IN_CHRG,
+            brd.BRD_CTNTS,
+            DATE_FORMAT(brd.BRD_REG_DTM, '%Y-%m-%d %H:%i:%s') AS BRD_REG_DTM,
+            brd.BRD_RSN_PNDNG,
+            brd.REG_MBR_SEQ,
+            brd.BRD_POST_CD,
+            brd.BRD_USE_TF
+        FROM BRD brd
+        WHERE brd.BRD_SEQ IN (
+            SELECT memo.BRD_SEQ
+            FROM MEMO memo
+            WHERE memo.MEMO_REG_DTM > DATE_SUB(NOW(), INTERVAL 30 MINUTE)  
+            AND memo.MEMO_USE_TF = TRUE
+        )
+        AND brd.BRD_USE_TF = TRUE
+        ORDER BY BRD_REG_DTM ASC;`
+    },
     //미처리 건 
     getNotFinPosts: function(data){
         return`

@@ -232,7 +232,7 @@ router
             //  메모를 스스로 붙여보아요 하하 재밌겠다
             let obj_bf = util.makeTree(schds, steps, 4)
             let obj_af = []
-            obj_bf.map((schd)=> {
+            obj_bf?.map((schd)=> {
                 let schdMemos = memos.filter(memo => {
                     return (memo.SCHD_SEQ == schd.SCHD_SEQ && memo.SCHD_TP == schd.SCHD_TP);
                 })

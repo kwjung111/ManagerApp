@@ -105,21 +105,28 @@ const util = {
 
       const [result] = await conn.query(queries(data));
       await conn.commit();
-      conn.release();
+
       rt.ok = true;
       rt.msg = "request success";
       rt.statusCode = 200;
       rt.result = result;
+
     } catch (err) {
       logger.error('Transaction Error',{message:err});
       rt.msg = "Internal Server Error";
       rt.statusCode = 500;
       rt.result = err.message;
+
       if (conn) {
-        await conn.rollback();
+        await conn.rollbackTransaction();
+      }
+    }finally{
+      if(conn){
         conn.release();
       }
+
     }
+
     return rt;
   },
 
@@ -139,9 +146,12 @@ const util = {
 
       let results;
 
-      if (isAsync == true) {
+      if (isAsync) {
         results = await Promise.all(
-          queries.map((query) => conn.query(query(data)).then(([res]) => res))
+          queries.map(async (query) => { 
+            let [res] = await conn.query(query(data))
+            return res;
+          })
         );
       } else {
         results = [];
@@ -151,21 +161,28 @@ const util = {
           results.push(result);
         }
       }
+
       await conn.commit();
-      conn.release();
+      
       rt.ok = true;
       rt.msg = "request success";
       rt.statusCode = "200";
       rt.result = results;
     } catch (err) {
+
       logger.error('Transaction Error',{message:err});
       rt.msg = "Internal Server Error";
       rt.result = err.message;
+
       if (conn) {
         await conn.rollback();
+      }
+    } finally {
+      if(conn){
         conn.release();
       }
     }
+
     return rt;
   },
   //salt 생성하는 비동기 함수

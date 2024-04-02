@@ -150,7 +150,7 @@ const util = {
       rt.result = err.message;
 
       if (conn) {
-        await rollbackTransaction(conn);
+        await conn.rollbackTransaction();
       }
     }finally{
       if(conn){

@@ -3,7 +3,8 @@ const util = require("../util.js")
 const postQuery = require('../queries/postQuery.js')
 
 const dao = {
-    getPost: (data) => {
+    getPost: (req) => {
+        data =  util.parseReqBody(req)
         sqlData = [data.postSeq]
         query = postQuery.getPost()
         //return promise

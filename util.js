@@ -1,4 +1,5 @@
 const dbcPool = require("./dbconn.js");
+const dbcPoolMonitoring = require("./monitor-targetDBconn.js")
 const crypto = require('crypto')
 const { wss } = require("./wss.js");
 const logger = require("./logger.js")
@@ -90,11 +91,43 @@ const util = {
     }
   },
 
-  transactionV2: async(data,query) => {
+  transactionV2: async(query,data) => {
     let conn = null;
     let res = {}
     try{
       conn = await dbcPool.getConnection();
+      await conn.beginTransaction();
+    
+      const [result] = await conn.query(query, data)
+      await conn.commit();
+
+      res.ok = true;
+      res.result = result
+
+
+    } catch(err) {
+      logger.error('Query error', {message:err})
+      
+      if(conn){
+        await conn.rollback();
+      }
+
+      res.ok = false;
+      res.result = null;
+
+    } finally{
+      if(conn){
+        conn.release()
+      }
+    }
+    return res
+  },
+
+  transaction_Monitoring: async(query,data) => {
+    let conn = null;
+    let res = {}
+    try{
+      conn = await dbcPoolMonitoring.getConnection();
       await conn.beginTransaction();
     
       const [result] = await conn.query(query, data)

@@ -8,7 +8,7 @@ const dao = {
         sqlData = [data.postSeq]
         query = postQuery.getPost()
         //return promise
-        return util.transactionV2(sqlData,query)
+        return util.transactionV2(query,sqlData)
     }
 }
 

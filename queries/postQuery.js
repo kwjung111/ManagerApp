@@ -21,14 +21,13 @@ const query = {
         brd.BRD_REG_DTM >= DATE_FORMAT(CURRENT_DATE(), '%Y-%m-01')
         ),
         TRUE,
-        ${dbc.escape(data.content)},
-        ${dbc.escape(data.inCharge)},
+        ?,
+        ?,
         TRUE,
-        ${dbc.escape(data.postCd)}, -- 일반/긴급
-        ${dbc.escape(data.userData.seq)},
+        ?, -- 일반/긴급
+        ?,
         NOW(),
         NOW())`
-    logger.info("addPostQuery",{message:query})
     return query},
 
     // 대기 사유 같이 저장하기 위해 insert문 새로 넣음
@@ -66,7 +65,7 @@ const query = {
         return `UPDATE BRD 
         SET BRD_USE_TF = FALSE
         WHERE 1=1
-            AND BRD_SEQ = ${dbc.escape(data.postSeq)}`
+            AND BRD_SEQ = ?`
     },
     //게시물 개수 조회
     getPostsCount : function(){

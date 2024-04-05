@@ -4,6 +4,7 @@ const util = require("../util.js")
 const postQuery = require("../queries/postQuery.js")
 const memoQuery = require("../queries/memoQuery.js")
 const postDao = require('../dao/postDao.js')
+const postService = require('../services/postServices.js')
 const {wsJson,broadcast} = require('../wss.js')
 const logger = require("../logger.js")
 const CryptoJS = require("crypto-js")
@@ -12,28 +13,22 @@ const CryptoJS = require("crypto-js")
 
 router
 .get("/",(req,res)=>{
-    util.transaction(req,postQuery.getPosts)
-    .then( (ret)=> {
+    postService.getPost(req)
+    .then((ret) =>{
         res.send(ret)
     })
 })
 
 .get("/count",(req,res)=>{
-    util.transaction(req,postQuery.getPostsCount)
-    .then( (ret)=> {
+    postService.getPostsCount(req)
+    .then((ret)=>{
         res.send(ret)
     })
 })
 
-.get('/tree',async (req,res) =>{
-
-
-    util.transactions(req,[postQuery.getPosts,memoQuery.getMemos],true)
+.get('/tree', (req,res) =>{
+    postService.getPostsTree(req)
     .then((ret) => {
-        let posts = ret.result[0]
-        let memos = ret.result[1]
-
-        ret.result = util.makeTree(posts,memos, 0)
         res.send(ret)
     })
 })  
@@ -133,37 +128,22 @@ router
     })
 
 })
-
-
-
 .get("/:postSeq",(req,res)=>{
-    /*
-    const { postSeq } = req.params;
-    util.transactionV2(postSeq,postQuery.getPost)
+    //validation
+    postService.getPostWithSeq(req)
     .then((ret)=>{
         res.send(ret)
     })
-    */
-
-    //validation
-    postDao.getPost(req).then((ret) =>{
-        res.send(ret)
-    })
 })
-
 
 .post("/",(req,res)=>{
-    util.transaction(req,postQuery.addPost)
-    .then( (ret)=> {
-        ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
-        res.send(ret)
-        if(ret.ok == true){
-            const event = new wsJson("event")
-            .event("POST","posts",ret.result.insertId,req.body.UID,req.body.content)
-            broadcast(event)
-        }
-    })
+    //validation
+   postService.addPost(req)
+   .then((ret) =>{
+    res.send(ret)
+   })
 })
+
 .patch("/chgPost",(req,res)=>{
     util.transaction(req,postQuery.chgPost)
     .then( (ret) => {
@@ -214,15 +194,10 @@ router
 })
 
 .delete("/:postSeq",async (req,res)=>{
-    const { postSeq } = req.params;
-    util.transaction(req,postQuery.removePost)
-    .then( (ret)=> {
+    postService.deletePost(req)
+    .then((ret)=> {
         res.send(ret)
-        if(ret.ok == true){
-            broadcast(new wsJson("event").event("DELETE","posts",req.params.postSeq,null,null))
-        }
     })
-
 })
 
 /**

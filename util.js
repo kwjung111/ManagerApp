@@ -123,6 +123,55 @@ const util = {
     return res
   },
 
+  transactionsV2: async (queries, data, isAsync = false) => {
+    let conn = null;
+    let res = {}
+
+    try {
+      conn = await dbcPool.getConnection();
+      await conn.beginTransaction();
+
+      let results;
+
+      if (isAsync) {
+        results = await Promise.all(
+          queries.map(async (query) => { 
+            let [res] = await conn.query(query,data)
+            return res;
+          })
+        );
+      } else {
+        results = [];
+        for (let qry of queries) {
+          let [result] = await conn.query(qry,data);
+          data[qry.name] = result;
+          results.push(result);
+        }
+      }
+
+      await conn.commit();
+      
+      res.ok = true;
+      res.result = results;
+    } catch (err) {
+
+      logger.error('Query Error',{message:err});
+
+      if (conn) {
+        await conn.rollback();
+      }
+
+      res.ok = false;
+      res.results = null;
+    } finally {
+      if(conn){
+        conn.release();
+      }
+    }
+    return res
+  },
+
+
   transaction_Monitoring: async(query,data) => {
     let conn = null;
     let res = {}

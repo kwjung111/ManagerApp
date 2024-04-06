@@ -27,7 +27,7 @@ const service = {
         ret.result.postSeq = ret.result.insertId; //저장된 게시물넘버 리턴
         if (ret.ok == true) {
             const event = new wsJson("event")
-                .event("POST", "posts", ret.result.insertId, req.body.UID, req.body.content)
+                .event("POST", "posts", ret.result.insertId, data.UID, data.content)
             broadcast(event)
         }
         return ret
@@ -35,14 +35,14 @@ const service = {
     patchPost : async (data) => {
         const ret = await postDao.patchPost(data)
         if(ret.ok == true){
-            broadcast(new wsJson("event").event("PATCH","posts",req.body.postSeq,req.body.UID))
+            broadcast(new wsJson("event").event("PATCH","posts",data.postSeq,data.UID))
         }
         return ret
     },
     deletePost : async (data) => {
         const ret = await postDao.deletePost(data)
         if (ret.ok == true) {
-            broadcast(new wsJson("event").event("DELETE", "posts", req.params.postSeq, null, null))
+            broadcast(new wsJson("event").event("DELETE", "posts", data.postSeq, null, null))
         }
         return ret
     }

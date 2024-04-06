@@ -11,9 +11,8 @@ const service = {
         const ret= postDao.getPostsCount()
         return ret
     },
-    getPostWithSeq : async (req) => {
-        const dto =  util.parseReqBody(req)
-        const ret = await postDao.getPostWithSeq(dto)
+    getPostWithSeq : async (data) => {
+        const ret = await postDao.getPostWithSeq(data)
         return ret
     },
     getPostsTree : async () => {
@@ -23,9 +22,8 @@ const service = {
         ret.result = util.makeTree(posts, memos, 0)
         return ret
     },
-    addPost : async (req) => {
-        const dto = util.parseReqBody(req)
-        const ret = await postDao.addPost(dto)
+    addPost : async (data) => {
+        const ret = await postDao.addPost(data)
         ret.result.postSeq = ret.result.insertId; //저장된 게시물넘버 리턴
         if (ret.ok == true) {
             const event = new wsJson("event")
@@ -34,17 +32,15 @@ const service = {
         }
         return ret
     },
-    patchPost : async (req) => {
-        const dto = util.parseReqBody(req)
-        const ret = await postDao.patchPost(dto)
+    patchPost : async (data) => {
+        const ret = await postDao.patchPost(data)
         if(ret.ok == true){
             broadcast(new wsJson("event").event("PATCH","posts",req.body.postSeq,req.body.UID))
         }
         return ret
     },
-    deletePost : async (req) => {
-        const dto = util.parseReqBody(req)
-        const ret = await postDao.deletePost(dto)
+    deletePost : async (data) => {
+        const ret = await postDao.deletePost(data)
         if (ret.ok == true) {
             broadcast(new wsJson("event").event("DELETE", "posts", req.params.postSeq, null, null))
         }

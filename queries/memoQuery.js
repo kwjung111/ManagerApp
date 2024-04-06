@@ -3,19 +3,21 @@ const logger = require('../logger.js')
 
 const memoQuery = {
     //댓글 등록
-    addMemoQuery : function(data){
-        return `INSERT INTO MEMO(
+    addMemo : function(data){
+        const query =  `
+        INSERT INTO MEMO(
             BRD_SEQ,
             MEMO_CTNTS,
             REG_MBR_SEQ,
             MEMO_REG_DTM,   
             MEMO_USE_TF
             )VALUES(
-            ${dbc.escape(data.postSeq)},
-            ${dbc.escape(data.content)},
-            ${dbc.escape(data.userData.seq)},
+            ? ,
+            ? ,
+            ? ,
             NOW(),
             TRUE)`
+        return query
     },
     // 자동 등록 - 댓글 등록
     addMemoEncypt : function(data) {
@@ -37,7 +39,7 @@ const memoQuery = {
     },
     //댓글 조회
     getMemos : function(){
-        return `
+        const query =  `
         SELECT 
             memo.MEMO_SEQ,
             mbr.MBR_NM AS WRTR,
@@ -55,6 +57,7 @@ const memoQuery = {
          
         WHERE 1=1 
          AND memo.MEMO_USE_TF  = TRUE`
+        return query
      },
     //전체 댓글 조회(1주알 제한 없음)
     getMemosAll : function(){
@@ -77,11 +80,14 @@ const memoQuery = {
        AND memo.MEMO_USE_TF  = TRUE`
    },
      //댓글 제거
-    removeMemoQuery : function(data){
-       return `UPDATE MEMO 
-       SET MEMO_USE_TF = FALSE
-       WHERE 1=1
-           AND MEMO_SEQ =${dbc.escape(data.memoSeq)}`
+    deleteMemo : function(){
+      const query =  `
+        UPDATE MEMO 
+        SET MEMO_USE_TF = FALSE
+        WHERE 
+        MEMO_SEQ = ? `
+
+      return query
     },
     getMemosBySeqs: function(data){
         //escape 사용 없음.

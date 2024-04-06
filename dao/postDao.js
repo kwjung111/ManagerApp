@@ -20,25 +20,24 @@ const dao = {
         return util.transactionsV2(queries,null,true)
     },
     getPostWithSeq: (data) => {
-        console.log(data)
-        sqlData = [data.postSeq]
-        query = postQuery.getPost()
+        const sqlData = [data.postSeq]
+        const query = postQuery.getPost()
         //return promise
         return util.transactionV2(query,sqlData)
     },
     addPost: (data) => {
-        sqlData = [data.content,data.inCharge,data.postCd,data.userData.seq]
-        query = postQuery.addPost()
+        const sqlData = [data.content,data.inCharge,data.postCd,data.userData.seq]
+        const query = postQuery.addPost()
         return util.transactionV2(query,sqlData)
     },
     patchPost : (data) =>{
-        sqlData = [data.postCd,data.cntns,data.inCharge,data.prgCd,data.prgCd,data.prgCd,data.prgCd,data.prgCd,data.rsnPndg,data.postSeq]
-        query = postQuery.patchPost()
+        const sqlData = [data.postCd,data.cntns,data.inCharge,data.prgCd,data.prgCd,data.prgCd,data.prgCd,data.prgCd,data.rsnPndg,data.postSeq]
+        const query = postQuery.patchPost()
         return util.transactionV2(query,sqlData)
     },
     deletePost: (data) => {
-        sqlData = [data.postSeq]
-        query = postQuery.removePost()
+        const sqlData = [data.postSeq]
+        const query = postQuery.removePost()
         return util.transactionV2(query,sqlData)
     }
 }

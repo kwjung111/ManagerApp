@@ -13,21 +13,24 @@ const CryptoJS = require("crypto-js")
 
 router
 .get("/",(req,res)=>{
-    postService.getPost(req)
+    const data =  util.parseReqBody(req)
+    postService.getPost(data)
     .then((ret) =>{
         res.send(ret)
     })
 })
 
 .get("/count",(req,res)=>{
-    postService.getPostsCount(req)
+    const data =  util.parseReqBody(req)
+    postService.getPostsCount(data)
     .then((ret)=>{
         res.send(ret)
     })
 })
 
 .get('/tree', (req,res) =>{
-    postService.getPostsTree(req)
+    const data =  util.parseReqBody(req)
+    postService.getPostsTree(data)
     .then((ret) => {
         res.send(ret)
     })
@@ -130,7 +133,8 @@ router
 })
 .get("/:postSeq",(req,res)=>{
     //validation
-    postService.getPostWithSeq(req)
+    const data =  util.parseReqBody(req)
+    postService.getPostWithSeq(data)
     .then((ret)=>{
         res.send(ret)
     })
@@ -138,14 +142,16 @@ router
 
 .post("/",(req,res)=>{
     //validation
-   postService.addPost(req)
+    const data =  util.parseReqBody(req)
+   postService.addPost(data)
    .then((ret) =>{
     res.send(ret)
    })
 })
 
 .patch("/chgPost",(req,res)=>{
-    postService.patchPost(req)
+    const data =  util.parseReqBody(req)
+    postService.patchPost(data)
     .then((ret) =>{
         res.send(ret)
     })
@@ -190,7 +196,8 @@ router
 })
 
 .delete("/:postSeq",async (req,res)=>{
-    postService.deletePost(req)
+    const data =  util.parseReqBody(req)
+    postService.deletePost(data)
     .then((ret)=> {
         res.send(ret)
     })

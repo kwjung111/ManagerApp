@@ -31,6 +31,11 @@ const dao = {
         query = postQuery.addPost()
         return util.transactionV2(query,sqlData)
     },
+    patchPost : (data) =>{
+        sqlData = [data.postCd,data.cntns,data.inCharge,data.prgCd,data.prgCd,data.prgCd,data.prgCd,data.prgCd,data.rsnPndg,data.postSeq]
+        query = postQuery.patchPost()
+        return util.transactionV2(query,sqlData)
+    },
     deletePost: (data) => {
         sqlData = [data.postSeq]
         query = postQuery.removePost()

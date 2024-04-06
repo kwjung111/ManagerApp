@@ -192,29 +192,28 @@ const query = {
 	ORDER BY BRD_SEQ DESC;`
     },
     //게시물 수정
-    chgPost : function(data){
-        
+    patchPost : function(){
         return ` 
         UPDATE BRD SET 
-            BRD_POST_CD  = ${dbc.escape(data.postCd)}                -- 컬럼의 순서 매우 중요!!
-            ,BRD_CTNTS   = ${dbc.escape(data.cntns)}
-            ,BRD_IN_CHRG = ${dbc.escape(data.inCharge)}
+            BRD_POST_CD  = ?             -- 컬럼의 순서 매우 중요!!
+            ,BRD_CTNTS   = ?
+            ,BRD_IN_CHRG = ?
             ,BRD_ACT_TOT_TIME = CASE -- 진행시간 갱신
-                WHEN BRD_PRGSS_TF = '1' AND ${dbc.escape(data.prgCd)} IN ('0','2') THEN -- 진행중 -> 종료, 대기
+                WHEN BRD_PRGSS_TF = '1' AND ? IN ('0','2') THEN -- 진행중 -> 종료, 대기
                     SEC_TO_TIME(
                         TIME_TO_SEC(TIMEDIFF(NOW(), IFNULL(BRD_ACT_STRT_DTM,BRD_REG_DTM))) + 
                         TIME_TO_SEC(IFNULL(BRD_ACT_TOT_TIME,0)))
                 ELSE BRD_ACT_TOT_TIME END 
             ,BRD_ACT_STRT_DTM  = CASE
-                WHEN BRD_PRGSS_TF = '1' AND ${dbc.escape(data.prgCd)} IN ('0','2') THEN NOW()   -- 진행중 -> 종료, 대기
-                WHEN BRD_PRGSS_TF IN ('0','2') AND ${dbc.escape(data.prgCd)} = '1' THEN NOW()   -- 종료,대기 -> 진행중
+                WHEN BRD_PRGSS_TF = '1' AND ? IN ('0','2') THEN NOW()   -- 진행중 -> 종료, 대기
+                WHEN BRD_PRGSS_TF IN ('0','2') AND ? = '1' THEN NOW()   -- 종료,대기 -> 진행중
                 ELSE BRD_ACT_STRT_DTM END
-            ,BRD_PRGSS_TF  = ${dbc.escape(data.prgCd)}
+            ,BRD_PRGSS_TF  = ?
             ,BRD_RSN_PNDNG = CASE
-                WHEN  ${dbc.escape(data.prgCd)} = '2' THEN ${dbc.escape(data.rsnPndg)}
+                WHEN  ? = '2' THEN ?
                 ELSE BRD_RSN_PNDNG END
             ,BRD_MOD_DTM = NOW()
-        WHERE BRD_SEQ  = ${dbc.escape(data.postSeq)};`
+        WHERE BRD_SEQ  = ? ;`
     },
     //게시물 수정 및 완료 - 함수 이름 하드코딩에 주의
     clsPost : function(data){

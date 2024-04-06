@@ -145,14 +145,10 @@ router
 })
 
 .patch("/chgPost",(req,res)=>{
-    util.transaction(req,postQuery.chgPost)
-    .then( (ret) => {
+    postService.patchPost(req)
+    .then((ret) =>{
         res.send(ret)
-        if(ret.ok == true){
-            broadcast(new wsJson("event").event("PATCH","posts",req.body.postSeq,req.body.UID))
-        }
     })
-
 })
 .patch("/clsPost",(req,res)=>{
     let queries;

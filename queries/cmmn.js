@@ -10,7 +10,7 @@ const cmmnQuery = {
     ON CCI.CM_GRP_CD = CCG.CM_GRP_CD 
     AND  CCI.USE_TF = TRUE
 
-    WHERE CCG.CM_GRP_CD  = ${dbc.escape(data.grpCd)} -- 공통코드
+    WHERE CCG.CM_GRP_CD  = ?  -- 공통코드
     AND CCG.USE_TF = TRUE 
     ORDER BY CCI.SORT_ORDR ; `
   },

@@ -194,15 +194,18 @@ const query = {
     //게시물 수정
     patchPost : function(){
         return ` 
-        UPDATE BRD SET 
+        UPDATE BRD 
+        SET 
             BRD_POST_CD  = ?             -- 컬럼의 순서 매우 중요!!
             ,BRD_CTNTS   = ?
             ,BRD_IN_CHRG = ?
             ,BRD_ACT_TOT_TIME = CASE -- 진행시간 갱신
                 WHEN BRD_PRGSS_TF = '1' AND ? IN ('0','2') THEN -- 진행중 -> 종료, 대기
-                    SEC_TO_TIME(
-                        TIME_TO_SEC(TIMEDIFF(NOW(), IFNULL(BRD_ACT_STRT_DTM,BRD_REG_DTM))) + 
-                        TIME_TO_SEC(IFNULL(BRD_ACT_TOT_TIME,0)))
+                CONCAT(
+                    LPAD(FLOOR(TIMESTAMPDIFF(SECOND, IFNULL(BRD_ACT_STRT_DTM, BRD_REG_DTM), NOW()) / 3600), LENGTH(FLOOR(TIMESTAMPDIFF(SECOND, IFNULL(BRD_ACT_STRT_DTM, BRD_REG_DTM), NOW()) / 3600)), '0'), ':', -- 시간
+                    LPAD(FLOOR((TIMESTAMPDIFF(SECOND, IFNULL(BRD_ACT_STRT_DTM, BRD_REG_DTM), NOW()) % 3600) / 60), 2, '0'), ':', -- 분
+                    LPAD(TIMESTAMPDIFF(SECOND, IFNULL(BRD_ACT_STRT_DTM, BRD_REG_DTM), NOW()) % 60, 2, '0') -- 초
+                ) 
                 ELSE BRD_ACT_TOT_TIME END 
             ,BRD_ACT_STRT_DTM  = CASE
                 WHEN BRD_PRGSS_TF = '1' AND ? IN ('0','2') THEN NOW()   -- 진행중 -> 종료, 대기

@@ -6,8 +6,16 @@ const dao = {
     getMQInfo: (req) => {
         //data =  util.parseReqBody(req)
         
-        query = monitoringQuery.getMQInfoQuery()
+        const query = monitoringQuery.getMQInfo()
         //return promise
+        return util.transaction_Monitoring(query,null)
+    },
+    getTmsInfo : (req) => {
+        const query = monitoringQuery.getTmsInfo()
+        return util.transaction_Monitoring(query,null) 
+    },
+    getNaverInfo : (req) => {
+        const query = monitoringQuery.getNaverInfo()
         return util.transaction_Monitoring(query,null)
     }
 }

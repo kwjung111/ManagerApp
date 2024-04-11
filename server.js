@@ -71,7 +71,7 @@ function shouldCompress(req, res) {
 
 //서버,웹소켓 초기화
 server.listen(port, () => {
-  logger.info('server Started', {message:`${env} server is listening at localhost:${port}`});
+  logger.info(` ${env} Sever started! listening at ${port}`, {label : 'Initialize'});
 });
 initWss(server);
 

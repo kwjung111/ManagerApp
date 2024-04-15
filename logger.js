@@ -76,16 +76,15 @@ const logger = winston.createLogger({
 
 winston.addColors(config.colors)
 
-if(env !== 'PRD'){
-    logger.add(
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.colorize(),
-                timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-                logFormat,
-            )
-        })
-    )
-}//개발계에서 로그 확인
+logger.add(
+    new winston.transports.Console({
+        format: winston.format.combine(
+            winston.format.colorize(),
+            timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+            logFormat,
+        )
+    })
+)
+
 
 module.exports = logger

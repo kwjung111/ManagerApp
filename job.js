@@ -10,13 +10,19 @@ let mqInfo = {
     stdb01 : 0
 }
 let tmsInfo = {
-    stdb : 0,
-    stdb01 : 0
+    count : 0
+}
+let appSndInfo = {
+    tot_cnt : 0,
+    comp_cnt : 0,
+    alarm_yn : 0,
+    comp_rt : 0
 }
 let naverInfo = {
     today : 0,
     total : 0
 }
+
 
 let customInfo = {}
 
@@ -62,38 +68,55 @@ const getNaverInfo = () => {
     })
 }
 
+const getAppSndInfo = () => {
+    monitoringDao.getAppSndInfo()
+    .then( (res) => {
+
+        const appSndInfos = res.result[0]
+        
+        appSndInfo.tot_cnt  = appSndInfos.TOT_CNT
+        appSndInfo.comp_cnt = appSndInfos.COMP_CNT
+        appSndInfo.alarm_yn = appSndInfos.ALARM_YN
+        appSndInfo.comp_rt = appSndInfos.COMP_RT
+
+    })
+}
+
 const getCustomInfo = async () => {
     
     const mqInfoPromise = monitoringDao.getMQInfo()
     const tmsInfoPromise = monitoringDao.getTmsInfo()
+    const appSndInfoPromise = monitoringDao.getAppSndInfo()
     const naverInfoPromise = monitoringDao.getNaverInfo()
 
-    const promises = [mqInfoPromise,tmsInfoPromise,naverInfoPromise]
+    const promises = [mqInfoPromise,tmsInfoPromise,appSndInfoPromise,naverInfoPromise]
     
-    const [mqData, tmsData, naverData ] = await Promise.all(promises)
+    const [mqData, tmsData, appSndData, naverData ] = await Promise.all(promises)
 
     customInfo = {
-        mqInfo: { stdb: mqData.result[0].stdb, stdb01: mqData.result[0].stdb01 },
-        tmsInfo: { stdb: tmsData.result[0].stdb, stdb01: tmsData.result[0].stdb01 },
-        naverInfo: { today: naverData.result[0].today, total: naverData.result[0].total },
+        mqInfo     :  { stdb: mqData.result[0].stdb, stdb01: mqData.result[0].stdb01 },
+        tmsInfo    :  { count: tmsData.result[0].count },
+        appSndInfo :  { tot_cnt : appSndData.result[0].TOT_CNT, comp_cnt : appSndData.result[0].COMP_CNT,
+                        alarm_yn : appSndData.result[0].ALARM_YN, comp_rt : appSndData.result[0].COMP_RT },
+        naverInfo  :  { today: naverData.result[0].today, total: naverData.result[0].total },
     }
 }
 
 
 const initailizeMonitoring = () => {
     getCustomInfo.then()
-
-
 }
+
+
 //initialize
 getCustomInfo();
 
 setInterval(() => {
     getCustomInfo();
     const msg = new wsJson("message")
-                .message("MQ")
+                .message("monitoring message")
     broadcast(msg)
-    logger.debug('monitoring', {label : "monitoring"})
+    console.log(customInfo)
 },interval);
 
 const getMonitoringResult = {
@@ -102,6 +125,9 @@ const getMonitoringResult = {
     },
     getTmsInfo : function(){
         return tmsInfo
+    },
+    getAppSndInfo : function(){
+        return appSndInfo 
     },
     getNaverInfo : function(){
         return naverInfo

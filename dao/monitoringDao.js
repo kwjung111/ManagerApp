@@ -14,6 +14,10 @@ const dao = {
         const query = monitoringQuery.getTmsInfo()
         return util.transaction_Monitoring(query,null) 
     },
+    getAppSndInfo : (req) => {
+        const query = monitoringQuery.getAppSndInfo()
+        return util.transaction_Monitoring(query,null)
+    },
     getNaverInfo : (req) => {
         const query = monitoringQuery.getNaverInfo()
         return util.transaction_Monitoring(query,null)

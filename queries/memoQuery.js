@@ -56,10 +56,11 @@ const memoQuery = {
          on memo.REG_MBR_SEQ  = mbr.MBR_SEQ 
          
         WHERE 1=1 
-         AND memo.MEMO_USE_TF  = TRUE`
+         AND memo.MEMO_USE_TF  = TRUE
+         ORDER BY MEMO_REG_DTM ASC;`
         return query
      },
-    //전체 댓글 조회(1주알 제한 없음)
+    //전체 댓글 조회(1주일 제한 없음)
     getMemosAll : function(){
       return `
       SELECT 
@@ -77,7 +78,8 @@ const memoQuery = {
        on memo.REG_MBR_SEQ  = mbr.MBR_SEQ 
        
       WHERE 1=1 
-       AND memo.MEMO_USE_TF  = TRUE`
+       AND memo.MEMO_USE_TF  = TRUE
+       ORDER BY MEMO_REG_DTM ASC;`
    },
      //댓글 제거
     deleteMemo : function(){

@@ -161,7 +161,12 @@ const query = {
             AND memo.MEMO_USE_TF = TRUE
         )
         AND brd.BRD_USE_TF = TRUE
-        ORDER BY BRD_REG_DTM ASC;`
+        ORDER BY (
+    		SELECT MIN(memo.MEMO_REG_DTM)
+    		FROM MEMO memo
+    		WHERE memo.BRD_SEQ = brd.BRD_SEQ
+    		AND memo.MEMO_USE_TF = TRUE
+		) DESC;`
     },
     //미처리 건 
     getNotFinPosts: function(data){

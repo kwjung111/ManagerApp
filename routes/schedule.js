@@ -87,14 +87,16 @@ router
             .then(async (ret) => {
                 ret.result.schdSeq = ret.result.insertId
                 ret.result.schdTp = 1
-                for (let i = 0; i < steps.length; i++) {
-                    tmp.body = steps[i]
-                    tmp.body.userData = findSeqAndName(req.headers.authorization)
-                    tmp.body.SCHD_SEQ = ret.result.insertId
-                    await util.transaction(tmp, stepQuery.addStep)
-                        .then((ret) => {
-                        })
-
+                if (steps[0].STEP_STRT_DTM != '' && steps[0].STEP_END_DTM != ''){   //프로젝트 단계 날짜 지정했을때만 단계 저장
+                    for (let i = 0; i < steps.length; i++) {
+                        tmp.body = steps[i]
+                        tmp.body.userData = findSeqAndName(req.headers.authorization)
+                        tmp.body.SCHD_SEQ = ret.result.insertId
+                        await util.transaction(tmp, stepQuery.addStep)
+                            .then((ret) => {
+                            })
+    
+                    }
                 }
                 res.send(ret)
                 if (ret.ok == true) {
@@ -217,8 +219,8 @@ router
     // step 02 :: 전체 스케줄에 메모 붙이기
     // step 03 :: 멤버와 스케줄 붙이기
 
-
-    util.transactions(req, [mbrQuery.getMbrs, scheduleQuery.getAllSchd, stepQuery.allsteps, memoQuery.getAllSchdMemos], true)
+    // 전체 스케줄 관리가 기간설정 스케줄 검색으로 바뀌어서 수정했음 !
+    util.transactions(req, [mbrQuery.getMbrs, scheduleQuery.getAllSchdByMonth, stepQuery.allsteps, memoQuery.getAllSchdMemos], true)
         .then((ret) => {
             let mrbs = ret.result[0]
             let schds = ret.result[1]
@@ -244,7 +246,7 @@ router
             // step 03 :: 스케줄이 있는 직원만 반환하기 위해 재 필터링
             let tree = util.makeTree(mrbs, obj_af, 3)
             let tmp = tree.filter((mbr) => {
-                return mbr.schds?.length != 0;
+                return mbr.schds?.length > 0;
             })
 
             ret.result = tmp

@@ -165,7 +165,7 @@ const memoQuery = {
            ON MB2.MBR_NM = M.SCHD_OWNER_MBR_NM
         WHERE 1 = 1
           AND M.SCHD_MEMO_USE_TF = 1
-          AND MB2.MBR_NM = '${data.mbrNm}'
+    --    AND MB2.MBR_NM = '${data.mbrNm}'
         ORDER BY M.SCHD_MEMO_REG_DTM ASC
         `
     },

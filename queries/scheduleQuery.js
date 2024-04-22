@@ -125,7 +125,7 @@ const scheduleQuery = {
             AND P.PRJ_PRGSS_CD = 1                           -- 진행중인 것만 (완료, 취소 제외)
   --           AND P.PRJ_END_DTM > NOW()
         ) AS schd
-        ORDER BY SCHD_PIN_YN DESC, SCHD_STRT_DTM ASC, SCHD_REG_DTM DESC
+        ORDER BY SCHD_PIN_YN DESC, SCHD_STRT_DTM DESC, SCHD_REG_DTM DESC
         `
     },
     // 최근 3개월 스케줄 ( 완료이거나, 종료일자가 오늘을 넘긴 것 )

@@ -10,7 +10,9 @@ let mqInfo = {
     stdb01 : 0
 }
 let tmsInfo = {
-    count : 0
+    lv1 : 0,
+    lv2 : 0,
+    lv3 : 0
 }
 let appSndInfo = {
     tot_cnt : 0,
@@ -46,8 +48,9 @@ const getTmsInfo = () => {
 
         const tmsInfos = res.result[0]
 
-        tmsInfo.stdb = tmsInfos.stdb;
-        tmsInfo.stdb01 = tmsInfos.stdb01; 
+        tmsInfo.lv1 = tmsInfos.CNT_LVL_1;
+        tmsInfo.lv2 = tmsInfos.CNT_LVL_2;
+        tmsInfo.lv3 = tmsInfos.CNT_LVL_3; 
     })
     .cathch((error) => {
         logger.error("mq monitoring Error : ", error)
@@ -86,18 +89,15 @@ const getCustomInfo = async () => {
     
     const mqInfoPromise = monitoringDao.getMQInfo()
     const tmsInfoPromise = monitoringDao.getTmsInfo()
-    const appSndInfoPromise = monitoringDao.getAppSndInfo()
     const naverInfoPromise = monitoringDao.getNaverInfo()
 
-    const promises = [mqInfoPromise,tmsInfoPromise,appSndInfoPromise,naverInfoPromise]
+    const promises = [mqInfoPromise,tmsInfoPromise,naverInfoPromise]
     
-    const [mqData, tmsData, appSndData, naverData ] = await Promise.all(promises)
+    const [mqData, tmsData,naverData ] = await Promise.all(promises)
 
     customInfo = {
         mqInfo     :  { stdb: mqData.result[0].stdb, stdb01: mqData.result[0].stdb01 },
-        tmsInfo    :  { count: tmsData.result[0].count },
-        appSndInfo :  { tot_cnt : appSndData.result[0].TOT_CNT, comp_cnt : appSndData.result[0].COMP_CNT,
-                        alarm_yn : appSndData.result[0].ALARM_YN, comp_rt : appSndData.result[0].COMP_RT },
+        tmsInfo    :  { lv1 : tmsData.result[0].CNT_LVL_1, lv2 : tmsData.result[0].CNT_LVL_2, lv3 : tmsData.result[0].CNT_LVL_3 },
         naverInfo  :  { today: naverData.result[0].today, total: naverData.result[0].total },
     }
 }

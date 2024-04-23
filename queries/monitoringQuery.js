@@ -41,8 +41,8 @@ const monitoringQuery = {
 			IF(MAX(TARG.NOTI_PROC_STAT) = '01', 1, 0) AS CNT_LVL_1
 			, 0 AS CNT_LVL_2
 			, 0 AS CNT_LVL_3
-		FROM op_cm_mshp_noti NOTI
-		INNER JOIN op_cm_mshp_noti_targ TARG
+		FROM ridb.op_cm_mshp_noti NOTI
+		INNER JOIN ridb.op_cm_mshp_noti_targ TARG
 			ON TARG.OP_MSHP_NOTI_NO = NOTI.OP_MSHP_NOTI_NO
 		WHERE 1=1
 			AND NOTI.RESERV_DTM >= STR_TO_DATE(DATE_FORMAT(NOW(), '%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%i:%s')
@@ -64,8 +64,8 @@ const monitoringQuery = {
 				NOTI.OP_MSHP_NOTI_NO
 				, TARG.NOTI_PROC_STAT
 				, TARG.MOD_DTM
-			FROM op_cm_mshp_noti NOTI
-			INNER JOIN op_cm_mshp_noti_targ TARG
+			FROM ridb.op_cm_mshp_noti NOTI
+			INNER JOIN ridb.op_cm_mshp_noti_targ TARG
 				ON TARG.OP_MSHP_NOTI_NO = NOTI.OP_MSHP_NOTI_NO
 			WHERE 1=1
 				AND NOTI.RESERV_DTM >= STR_TO_DATE(DATE_FORMAT(NOW(), '%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%i:%s')
@@ -79,8 +79,8 @@ const monitoringQuery = {
 				NOTI.OP_MSHP_NOTI_NO
 				, TARG.NOTI_PROC_STAT
 				, TARG.MOD_DTM
-			FROM op_cm_mshp_noti NOTI
-			INNER JOIN op_cm_mshp_noti_targ_backup TARG
+			FROM ridb.op_cm_mshp_noti NOTI
+			INNER JOIN ridb.op_cm_mshp_noti_targ_backup TARG
 				ON TARG.OP_MSHP_NOTI_NO = NOTI.OP_MSHP_NOTI_NO
 			WHERE 1=1
 				AND NOTI.RESERV_DTM >= STR_TO_DATE(DATE_FORMAT(NOW(), '%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%i:%s')

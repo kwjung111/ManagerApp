@@ -134,14 +134,15 @@ router
                             console.log("기존 스텝 삭제완료")
                         }
                     })
-
-                for (let i = 0; i < steps.length; i++) {
-                    tmp.body = steps[i]
-                    tmp.body.userData = findSeqAndName(req.headers.authorization)
-                    tmp.body.SCHD_SEQ = ret.result.schdSeq
-                    await util.transaction(tmp, stepQuery.addStep)
-                        .then((ret) => {
-                        })
+                if (steps[0].STEP_STRT_DTM != '' && steps[0].STEP_END_DTM != ''){
+                    for (let i = 0; i < steps.length; i++) {
+                        tmp.body = steps[i]
+                        tmp.body.userData = findSeqAndName(req.headers.authorization)
+                        tmp.body.SCHD_SEQ = ret.result.schdSeq
+                        await util.transaction(tmp, stepQuery.addStep)
+                            .then((ret) => {
+                            })
+                    }
                 }
                 res.send(ret)
                 if(ret.ok == true) {

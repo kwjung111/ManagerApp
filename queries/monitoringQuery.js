@@ -1,8 +1,8 @@
-const logger = require('../logger.js')
+const logger = require("../logger.js");
 
 const monitoringQuery = {
-    getMQInfo : function(data){
-        const query = `
+  getMQInfo: function (data) {
+    const query = `
         SELECT
         (SELECT 
         count(1)
@@ -19,10 +19,10 @@ const monitoringQuery = {
         tph2.SAL_DT = DATE_FORMAT(NOW(), '%Y%m%d')
         AND tph2.BO_RCV_DTM >= DATE_FORMAT(now() - INTERVAL 30 SECOND, '%Y-%m-%d %H:%i:%s'))
         AS stdb01;`;
-        return query;
-    },
-    getTmsInfo : function(data){
-        const query = `
+    return query;
+  },
+  getTmsInfo: function (data) {
+    const query = `
 		SELECT
 		SUM(A.CNT_LVL_1) AS CNT_LVL_1
 		, SUM(A.CNT_LVL_2) AS CNT_LVL_2
@@ -56,40 +56,41 @@ const monitoringQuery = {
 		
 		-- 2. 발송 요청 지연 - PUSH ONLY 및 PUSH+문자&알림톡 PUSH 부분, 인증 문자
 		SELECT
-			0 AS CNT_LVL_1
-			, IF(MIN(B.MOD_DTM) <= DATE_SUB(NOW(), INTERVAL 10 MINUTE), 1, 0) AS CNT_LVL_2
-			, 0 AS CNT_LVL_3
+		0 AS CNT_LVL_1
+		, IF(MIN(B.MOD_DTM) <= DATE_SUB(NOW(), INTERVAL 10 MINUTE), 1, 0) AS CNT_LVL_2
+		, 0 AS CNT_LVL_3
 		FROM (
-			SELECT
-				NOTI.OP_MSHP_NOTI_NO
-				, TARG.NOTI_PROC_STAT
-				, TARG.MOD_DTM
-			FROM ridb.op_cm_mshp_noti NOTI
-			INNER JOIN ridb.op_cm_mshp_noti_targ TARG
-				ON TARG.OP_MSHP_NOTI_NO = NOTI.OP_MSHP_NOTI_NO
-			WHERE 1=1
-				AND NOTI.RESERV_DTM >= STR_TO_DATE(DATE_FORMAT(NOW(), '%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%i:%s')
-				AND NOTI.NOTI_METH IN ('2', '5')
-				AND NOTI.COMP_YN = '0'
-				AND NOTI.OP_TASK_CD = 'CMNT0001'
-			
-			UNION ALL
-			
-			SELECT
-				NOTI.OP_MSHP_NOTI_NO
-				, TARG.NOTI_PROC_STAT
-				, TARG.MOD_DTM
-			FROM ridb.op_cm_mshp_noti NOTI
-			INNER JOIN ridb.op_cm_mshp_noti_targ_backup TARG
-				ON TARG.OP_MSHP_NOTI_NO = NOTI.OP_MSHP_NOTI_NO
-			WHERE 1=1
-				AND NOTI.RESERV_DTM >= STR_TO_DATE(DATE_FORMAT(NOW(), '%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%i:%s')
-				AND NOTI.NOTI_METH IN ('2', '5')
-				AND NOTI.COMP_YN = '0'
-				AND NOTI.OP_TASK_CD = 'CMNT0001'
+		SELECT
+			NOTI.OP_MSHP_NOTI_NO
+			, TARG.NOTI_PROC_STAT
+			, TARG.MOD_DTM
+		FROM op_cm_mshp_noti NOTI
+		INNER JOIN op_cm_mshp_noti_targ TARG
+			ON TARG.OP_MSHP_NOTI_NO = NOTI.OP_MSHP_NOTI_NO
+		WHERE 1=1
+			AND NOTI.RESERV_DTM >= STR_TO_DATE(DATE_FORMAT(NOW(), '%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%i:%s')
+			AND NOTI.NOTI_METH IN ('2', '5')
+			AND NOTI.COMP_YN = '0'
+			AND NOTI.OP_TASK_CD = 'CMNT0001'
+		
+		UNION ALL
+		
+		SELECT
+			NOTI.OP_MSHP_NOTI_NO
+			, TARG.NOTI_PROC_STAT
+			, TARG.MOD_DTM
+		FROM op_cm_mshp_noti NOTI
+		INNER JOIN op_cm_mshp_noti_targ_backup TARG
+			ON TARG.OP_MSHP_NOTI_NO = NOTI.OP_MSHP_NOTI_NO
+		WHERE 1=1
+			AND NOTI.RESERV_DTM >= STR_TO_DATE(DATE_FORMAT(NOW(), '%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%i:%s')
+			AND NOTI.NOTI_METH IN ('2', '5')
+			AND NOTI.COMP_YN = '0'
+			AND NOTI.OP_TASK_CD = 'CMNT0001'
 		) B
 		GROUP BY B.OP_MSHP_NOTI_NO
 		HAVING MAX(B.NOTI_PROC_STAT) = '05'
+		AND MIN(IF(B.NOTI_PROC_STAT = '05', B.MOD_DTM, NULL)) <= DATE_SUB(NOW(), INTERVAL 10 MINUTE)
 		
 		UNION ALL 
 		
@@ -152,11 +153,11 @@ const monitoringQuery = {
 		) D
 			
 	) A
-;`
-       return query;
-    },
-    getNaverInfo : function(data){
-        const query = `
+;`;
+    return query;
+  },
+  getNaverInfo: function (data) {
+    const query = `
         select
         (SELECT COUNT(1) 
         FROM RIDB.NAVER_ORDERS
@@ -164,11 +165,11 @@ const monitoringQuery = {
         ) AS today,
         (SELECT COUNT(1)
         FROM RIDB.NAVER_ORDERS) AS total;
-        `
-        return query
-    },
-    getAppSndInfo : function(data){
-        const query = `
+        `;
+    return query;
+  },
+  getAppSndInfo: function (data) {
+    const query = `
         SELECT
          SUM(A.TOT_CNT) AS TOT_CNT
          , SUM(A.COMP_CNT) AS COMP_CNT
@@ -194,9 +195,9 @@ const monitoringQuery = {
           AND NOTI.REQ_DTM >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
           AND NOTI.OP_TASK_CD = 'CMNT0001'
           AND NOTI_METH = '2'
-        ) A`
-        return query
-    }
-}
+        ) A`;
+    return query;
+  },
+};
 
-module.exports = monitoringQuery
+module.exports = monitoringQuery;

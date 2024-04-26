@@ -3,7 +3,7 @@ const monitoringDao = require('./dao/monitoringDao.js')
 const logger = require('./logger.js')
 const {wsJson,broadcast} = require('./wss.js')
 
-const interval = 30000;
+const interval = 15000;
 
 let mqInfo = {
     stdb : 0,

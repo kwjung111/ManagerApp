@@ -87,7 +87,7 @@ router
             .then(async (ret) => {
                 ret.result.schdSeq = ret.result.insertId
                 ret.result.schdTp = 1
-                if (steps[0].STEP_STRT_DTM != '' && steps[0].STEP_END_DTM != ''){   //프로젝트 단계 날짜 지정했을때만 단계 저장
+                if (steps){   //프로젝트 단계 빈값이 없을때만 단계 저장
                     for (let i = 0; i < steps.length; i++) {
                         tmp.body = steps[i]
                         tmp.body.userData = findSeqAndName(req.headers.authorization)
@@ -134,7 +134,7 @@ router
                             console.log("기존 스텝 삭제완료")
                         }
                     })
-                if (steps[0].STEP_STRT_DTM != '' && steps[0].STEP_END_DTM != ''){
+                if (steps){
                     for (let i = 0; i < steps.length; i++) {
                         tmp.body = steps[i]
                         tmp.body.userData = findSeqAndName(req.headers.authorization)

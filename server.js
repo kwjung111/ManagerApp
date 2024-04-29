@@ -77,7 +77,7 @@ initWss(server);
 
 //권한 필요없는 요청
 if (env == "DEV") {
-  const testRouter = require("./routes/test.js");
+  const testRouter = require("./routes/forTest.js");
   app.use("/test", testRouter);
 }
   app.use("/auth", authRouter);

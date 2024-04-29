@@ -38,6 +38,7 @@ const authRouter = require("./routes/auth.js");
 const projectsRouter = require("./routes/projects.js");
 const scheduleRouter = require("./routes/schedule.js");
 const mbrRouter = require("./routes/mbrs.js")
+const monitoringRouter = require("./routes/monitoring.js")
 
 //정적 리소스 라우팅
 app.use(express.static(path.resolve(__dirname, "dist")));
@@ -70,7 +71,7 @@ function shouldCompress(req, res) {
 
 //서버,웹소켓 초기화
 server.listen(port, () => {
-  logger.info('server Started', {message:`${env} server is listening at localhost:${port}`});
+  logger.info(` ${env} Sever started! listening at ${port}`, {label : 'Initialize'});
 });
 initWss(server);
 
@@ -80,7 +81,9 @@ if (env == "DEV") {
   app.use("/test", testRouter);
 }
   app.use("/auth", authRouter);
+  app.use("/mntr/", monitoringRouter);
 app.use(verifyToken);
+
 
 //권한 필요한 요청
 app.use("/posts", postsRouter);
@@ -90,6 +93,9 @@ app.use("/projects", projectsRouter);
 app.use("/schedule", scheduleRouter);
 app.use("/mbr", mbrRouter);
 
+
+
+const job = require("./job.js");
 
 //TODO uuid -> jwt 기반으로 리팩토링하기
 app.get('/identifier',(req,res)=>{

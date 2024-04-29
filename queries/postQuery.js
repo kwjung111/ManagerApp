@@ -21,22 +21,51 @@ const query = {
         brd.BRD_REG_DTM >= DATE_FORMAT(CURRENT_DATE(), '%Y-%m-01')
         ),
         TRUE,
+        ?,
+        ?,
+        TRUE,
+        ?, -- 일반/긴급
+        ?,
+        NOW(),
+        NOW())`
+    return query},
+
+    // 대기 사유 같이 저장하기 위해 insert문 새로 넣음
+    addPostEncypt : function(data){
+        const query = `INSERT INTO BRD (
+        BRD_NO,
+        BRD_PRGSS_TF,
+        BRD_CTNTS,
+        BRD_IN_CHRG,
+        BRD_USE_TF,
+        BRD_POST_CD,
+        REG_MBR_SEQ,
+        BRD_RSN_PNDNG,
+        BRD_ACT_STRT_DTM,
+        BRD_REG_DTM
+        )VALUES(
+        (SELECT COUNT(0) + 1 FROM
+        BRD brd
+        WHERE 	
+        brd.BRD_REG_DTM >= DATE_FORMAT(CURRENT_DATE(), '%Y-%m-01')
+        ),
+        ${dbc.escape(data.prgssTF)},
         ${dbc.escape(data.content)},
         ${dbc.escape(data.inCharge)},
         TRUE,
-        ${dbc.escape(data.postCd)}, -- 일반/긴급
+        1, -- 일반/긴급
         ${dbc.escape(data.userData.seq)},
+        ${dbc.escape(data.rsnPndng)},  -- 대기사유
         NOW(),
         NOW())`
-    logger.info("addPostQuery",{message:query})
-    return query},
-
+        logger.info("addPostQuery",{message:query})
+        return query},
     // 게시물 논리적 삭제
     removePost : function(data){
         return `UPDATE BRD 
         SET BRD_USE_TF = FALSE
         WHERE 1=1
-            AND BRD_SEQ = ${dbc.escape(data.postSeq)}`
+            AND BRD_SEQ = ?`
     },
     //게시물 개수 조회
     getPostsCount : function(){
@@ -60,8 +89,8 @@ const query = {
         `
     },
     //게시물 내용 조회
-    getPosts : function(data){
-        return `
+    getPosts : function(){
+        const query = `
         SELECT 
         CONCAT(DATE_FORMAT(brd.BRD_REG_DTM, '%m'),"-",brd.BRD_NO) AS BRD_NO,
 	    brd.BRD_SEQ,
@@ -85,10 +114,11 @@ const query = {
 	    AND brd.BRD_USE_TF = TRUE
         AND brd.BRD_REG_DTM BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND NOW()
 	ORDER BY brd.BRD_SEQ DESC;`
+    return query
     },
     //게시물 상세 조회
-    getPost: function(data){
-        return `
+    getPost: function(){
+        const query =  `
         SELECT 
             brd.BRD_POST_CD		     -- 상태코드(긴급여부)
             ,brd.BRD_CTNTS		     -- 내용
@@ -106,7 +136,37 @@ const query = {
         LEFT OUTER JOIN BRD brd2
             ON brd2.BRD_SEQ = brd.BRD_END_FLLW_UP_SEQ
             AND brd2.BRD_USE_TF = TRUE
-        WHERE brd.BRD_SEQ = ${dbc.escape(data.postSeq)};`
+        WHERE brd.BRD_SEQ = ? ;`
+        return query
+    },
+    //최근 30분 안에 댓글이 달린 게시물 조회
+    getCommentedPost: function(data){
+        return`
+        SELECT 
+            CONCAT(DATE_FORMAT(brd.BRD_REG_DTM, '%m'),"-",brd.BRD_NO) AS BRD_NO,
+            brd.BRD_SEQ,
+            brd.BRD_PRGSS_TF,
+            brd.BRD_IN_CHRG,
+            brd.BRD_CTNTS,
+            DATE_FORMAT(brd.BRD_REG_DTM, '%Y-%m-%d %H:%i:%s') AS BRD_REG_DTM,
+            brd.BRD_RSN_PNDNG,
+            brd.REG_MBR_SEQ,
+            brd.BRD_POST_CD,
+            brd.BRD_USE_TF
+        FROM BRD brd
+        WHERE brd.BRD_SEQ IN (
+            SELECT memo.BRD_SEQ
+            FROM MEMO memo
+            WHERE memo.MEMO_REG_DTM > DATE_SUB(NOW(), INTERVAL 30 MINUTE)  
+            AND memo.MEMO_USE_TF = TRUE
+        )
+        AND brd.BRD_USE_TF = TRUE
+        ORDER BY (
+    		SELECT MAX(memo.MEMO_REG_DTM)
+    		FROM MEMO memo
+    		WHERE memo.BRD_SEQ = brd.BRD_SEQ
+    		AND memo.MEMO_USE_TF = TRUE
+		) DESC;`
     },
     //미처리 건 
     getNotFinPosts: function(data){
@@ -137,29 +197,31 @@ const query = {
 	ORDER BY BRD_SEQ DESC;`
     },
     //게시물 수정
-    chgPost : function(data){
-        
+    patchPost : function(){
         return ` 
-        UPDATE BRD SET 
-            BRD_POST_CD  = ${dbc.escape(data.postCd)}                -- 컬럼의 순서 매우 중요!!
-            ,BRD_CTNTS   = ${dbc.escape(data.cntns)}
-            ,BRD_IN_CHRG = ${dbc.escape(data.inCharge)}
+        UPDATE BRD 
+        SET 
+            BRD_POST_CD  = ?             -- 컬럼의 순서 매우 중요!!
+            ,BRD_CTNTS   = ?
+            ,BRD_IN_CHRG = ?
             ,BRD_ACT_TOT_TIME = CASE -- 진행시간 갱신
-                WHEN BRD_PRGSS_TF = '1' AND ${dbc.escape(data.prgCd)} IN ('0','2') THEN -- 진행중 -> 종료, 대기
-                    SEC_TO_TIME(
-                        TIME_TO_SEC(TIMEDIFF(NOW(), IFNULL(BRD_ACT_STRT_DTM,BRD_REG_DTM))) + 
-                        TIME_TO_SEC(IFNULL(BRD_ACT_TOT_TIME,0)))
+                WHEN BRD_PRGSS_TF = '1' AND ? IN ('0','2') THEN -- 진행중 -> 종료, 대기
+                CONCAT(
+                    LPAD(FLOOR(TIMESTAMPDIFF(SECOND, IFNULL(BRD_ACT_STRT_DTM, BRD_REG_DTM), NOW()) / 3600), LENGTH(FLOOR(TIMESTAMPDIFF(SECOND, IFNULL(BRD_ACT_STRT_DTM, BRD_REG_DTM), NOW()) / 3600)), '0'), ':', -- 시간
+                    LPAD(FLOOR((TIMESTAMPDIFF(SECOND, IFNULL(BRD_ACT_STRT_DTM, BRD_REG_DTM), NOW()) % 3600) / 60), 2, '0'), ':', -- 분
+                    LPAD(TIMESTAMPDIFF(SECOND, IFNULL(BRD_ACT_STRT_DTM, BRD_REG_DTM), NOW()) % 60, 2, '0') -- 초
+                ) 
                 ELSE BRD_ACT_TOT_TIME END 
             ,BRD_ACT_STRT_DTM  = CASE
-                WHEN BRD_PRGSS_TF = '1' AND ${dbc.escape(data.prgCd)} IN ('0','2') THEN NOW()   -- 진행중 -> 종료, 대기
-                WHEN BRD_PRGSS_TF IN ('0','2') AND ${dbc.escape(data.prgCd)} = '1' THEN NOW()   -- 종료,대기 -> 진행중
+                WHEN BRD_PRGSS_TF = '1' AND ? IN ('0','2') THEN NOW()   -- 진행중 -> 종료, 대기
+                WHEN BRD_PRGSS_TF IN ('0','2') AND ? = '1' THEN NOW()   -- 종료,대기 -> 진행중
                 ELSE BRD_ACT_STRT_DTM END
-            ,BRD_PRGSS_TF  = ${dbc.escape(data.prgCd)}
+            ,BRD_PRGSS_TF  = ?
             ,BRD_RSN_PNDNG = CASE
-                WHEN  ${dbc.escape(data.prgCd)} = '2' THEN ${dbc.escape(data.rsnPndg)}
+                WHEN  ? = '2' THEN ?
                 ELSE BRD_RSN_PNDNG END
             ,BRD_MOD_DTM = NOW()
-        WHERE BRD_SEQ  = ${dbc.escape(data.postSeq)};`
+        WHERE BRD_SEQ  = ? ;`
     },
     //게시물 수정 및 완료 - 함수 이름 하드코딩에 주의
     clsPost : function(data){

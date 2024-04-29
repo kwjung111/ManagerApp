@@ -51,6 +51,26 @@ const stepQuery = {
         ORDER BY S.STEP_SEQ
         `
     },
+    allsteps : function (data) {
+        return `
+        SELECT
+            S.STEP_SEQ          AS STEP_SEQ
+          , S.STEP_PRJ_SEQ      AS PRJ_SEQ
+          , S.STEP_NM           AS STEP_NM
+          , S.STEP_STRT_DTM     AS STEP_STRT_DTM
+          , S.STEP_END_DTM      AS STEP_END_DTM
+          , S.STEP_CNTNTS       AS STEP_CNTNTS
+          , S.STEP_REG_DTM      AS STEP_REG_DTM
+          , IFNULL(S.STEP_MOD_DTM, S.STEP_REG_DTM)      AS STEP_MOD_DTM     -- NULL이면 등록일자 주기
+          , MB.MBR_NM           AS WRTR
+         FROM STEP S
+        INNER JOIN MBR MB
+           ON MB.MBR_SEQ = S.STEP_REG_MBR_SEQ
+        WHERE 1 = 1
+          AND S.STEP_USE_TF = 1
+        ORDER BY S.STEP_SEQ
+        `
+    },
     
     // 프로젝트 - 단계 수정
     chgStep : function(data) {

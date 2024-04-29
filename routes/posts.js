@@ -3,33 +3,35 @@ const router = express.Router();
 const util = require("../util.js")
 const postQuery = require("../queries/postQuery.js")
 const memoQuery = require("../queries/memoQuery.js")
+const postDao = require('../dao/postDao.js')
+const postService = require('../services/postServices.js')
 const {wsJson,broadcast} = require('../wss.js')
 const logger = require("../logger.js")
+const CryptoJS = require("crypto-js")
+
+
 
 router
 .get("/",(req,res)=>{
-    util.transaction(req,postQuery.getPosts)
-    .then( (ret)=> {
+    const data =  util.parseReqBody(req)
+    postService.getPost(data)
+    .then((ret) =>{
         res.send(ret)
     })
 })
 
 .get("/count",(req,res)=>{
-    util.transaction(req,postQuery.getPostsCount)
-    .then( (ret)=> {
+    const data =  util.parseReqBody(req)
+    postService.getPostsCount(data)
+    .then((ret)=>{
         res.send(ret)
     })
 })
 
-.get('/tree',async (req,res) =>{
-
-
-    util.transactions(req,[postQuery.getPosts,memoQuery.getMemos],true)
+.get('/tree', (req,res) =>{
+    const data =  util.parseReqBody(req)
+    postService.getPostsTree(data)
     .then((ret) => {
-        let posts = ret.result[0]
-        let memos = ret.result[1]
-
-        ret.result = util.makeTree(posts,memos, 0)
         res.send(ret)
     })
 })  
@@ -72,6 +74,17 @@ router
         }
     })
 
+})
+
+.get("/commented", async (req, res) => {
+    util.transactions(req,[postQuery.getCommentedPost,memoQuery.getMemosAll],true)
+    .then((ret) => {
+        let posts = ret.result[0]
+        let memos = ret.result[1]
+
+        ret.result = util.makeTree(posts,memos, 0)
+        res.send(ret)
+    })
 })
 
 .get('/byMonth', (req,res) => {
@@ -118,39 +131,30 @@ router
     })
 
 })
-
-
-
 .get("/:postSeq",(req,res)=>{
-    const { postSeq } = req.params;
-    util.transaction(req,postQuery.getPost)
+    //validation
+    const data =  util.parseReqBody(req)
+    postService.getPostWithSeq(data)
     .then((ret)=>{
         res.send(ret)
     })
 })
 
-
 .post("/",(req,res)=>{
-    util.transaction(req,postQuery.addPost)
-    .then( (ret)=> {
-        ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
-        res.send(ret)
-        if(ret.ok == true){
-            const event = new wsJson("event")
-            .event("POST","posts",ret.result.insertId,req.body.UID,req.body.content)
-            broadcast(event)
-        }
-    })
+    //validation
+    const data =  util.parseReqBody(req)
+   postService.addPost(data)
+   .then((ret) =>{
+    res.send(ret)
+   })
 })
-.patch("/chgPost",(req,res)=>{
-    util.transaction(req,postQuery.chgPost)
-    .then( (ret) => {
-        res.send(ret)
-        if(ret.ok == true){
-            broadcast(new wsJson("event").event("PATCH","posts",req.body.postSeq,req.body.UID))
-        }
-    })
 
+.patch("/chgPost",(req,res)=>{
+    const data =  util.parseReqBody(req)
+    postService.patchPost(data)
+    .then((ret) =>{
+        res.send(ret)
+    })
 })
 .patch("/clsPost",(req,res)=>{
     let queries;
@@ -192,49 +196,79 @@ router
 })
 
 .delete("/:postSeq",async (req,res)=>{
-    const { postSeq } = req.params;
-    util.transaction(req,postQuery.removePost)
-    .then( (ret)=> {
+    const data =  util.parseReqBody(req)
+    postService.deletePost(data)
+    .then((ret)=> {
         res.send(ret)
-        if(ret.ok == true){
-            broadcast(new wsJson("event").event("DELETE","posts",req.params.postSeq,null,null))
-        }
     })
-
 })
 
 /**
  * 토큰 없이 sr 등록하는 api
- * 회사 IP 주소로만 접근 가능
+ * 대칭키 암호화 AES 사용
  * */
 .post("/noToken/post", (req, res) =>{
-    const allowedIPPrefix = "10.28.100.";
-    const clientIP = req.ip.substring(7,17)
-    if (clientIP.startsWith(allowedIPPrefix) || req.ip == '::1') {
-        // pass
-        /* ========================== IP 검증 통과 ========================== */
-
-        // 라우트 호출 불가
-        req.body.userData = {} // TS_CS-poster 계정
-        req.body.userData.seq = 33 // 개발 : 57, 운영 : 33
-        // ID : TS_CS-poster
-        // PW : 123456
-
-        util.transaction(req,postQuery.addPost)
-            .then( (ret)=> {
-                ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
-                res.send(ret)
-                if(ret.ok == true){
-                    const event = new wsJson("event")
-                        .event("POST","posts",ret.result.insertId,'-',req.body.content) /* 수/발신 UID 다르면 noti 띄우는 방식 */
-                    broadcast(event)
+    // let data = {
+    //     "content": "- 공개/암호 api 등록 테스트 입니다 -",
+    //     "inCharge": "-",
+    //     "postCd": "0",
+    //     "prgssTF": 2,
+    //     "rsnPndng": "대기사유 적어주세요",
+    //     "url": "ts-cs 시트 슬라이드 url들어올 자리"
+    // }
+    // let encryptDATA = CryptoJS.AES.encrypt(JSON.stringify(req.body), process.env.DECRYPT_KEY).toString();
+    // res.send(encryptDATA)
+    let decryptBYTE = CryptoJS.AES.decrypt(req.body.data.toString(), process.env.DECRYPT_KEY);
+    let decryptDATA ='';
+    try {
+        decryptDATA = JSON.parse(decryptBYTE.toString(CryptoJS.enc.Utf8))
+    } catch (e){
+        let ret = {
+            "ok": false,
+            "msg": "FORBIDDEN",
+            "statusCode": "404",
+            "result": [
+                {
+                    "message": "복호화 불가"
                 }
-            })
-    } else {
-        console.log("bad")
-        console.log(req.ip)
-        res.status(403).send("접근금지"); // 금지된 응답을 보냄
+            ]
+        }
+        res.send(ret)
     }
+
+    req.body = decryptDATA
+
+    req.body.userData = {} // TS_CS-poster 계정
+    req.body.userData.seq = process.env.BRD_POSTER
+    let memoReq = req;
+    util.transaction(req,postQuery.addPostEncypt)
+        .then(async (ret)=> {
+            memoReq.body.brdSeq = ret.result.insertId
+            await util.transaction(memoReq, memoQuery.addMemoEncypt)
+                .then((ret) => {
+                    // memo 등록 반환값
+                })
+            ret.result.postSeq = ret.result.insertId       //저장된 게시물넘버 리턴
+            res.send(ret)
+            if(ret.ok == true){
+                const event = new wsJson("event")
+                    .event("POST","posts",ret.result.insertId,'-',req.body.content) /* 수/발신 UID 다르면 noti 띄우는 방식 */
+                broadcast(event)
+            }
+        })
+        .catch((err) => {
+            let ret = {
+                "ok": false,
+                "msg": "FORBIDDEN",
+                "statusCode": "404",
+                "result": [
+                    {
+                        "message": "쿼리 수행 불가"
+                    }
+                ]
+            }
+            res.send(ret)
+        })
 })
 
 

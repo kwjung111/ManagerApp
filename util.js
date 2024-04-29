@@ -1,4 +1,5 @@
 const dbcPool = require("./dbconn.js");
+const dbcPoolMonitoring = require("./monitor-targetDBconn.js")
 const crypto = require('crypto')
 const { wss } = require("./wss.js");
 const logger = require("./logger.js")
@@ -37,7 +38,7 @@ const util = {
         acc.push(curPost);
         return acc;
       }, []);
-    } else {    // SCHD - 전체 직원 스케줄 조회
+    } else if (treeTp == 3) {    // SCHD - 전체 직원 스케줄 조회
       return posts.reduce((acc, cur) => {
         let curPost = util.deepCopy(cur);
         const matchingMemos = memos.filter((memo) => {
@@ -45,6 +46,18 @@ const util = {
         });
         if (matchingMemos != null) {
           curPost.schds = matchingMemos;
+        }
+        acc.push(curPost);
+        return acc;
+      }, []);
+    } else if (treeTp == 4) { // 프로젝트에 단계 붙이기
+      return posts.reduce((acc, cur) => {
+        let curPost = util.deepCopy(cur);
+        const matchingMemos = memos.filter((memo) => {
+          return cur.SCHD_TP == '1' && cur.SCHD_SEQ == memo.PRJ_SEQ;
+        });
+        if (matchingMemos != null) {
+          curPost.steps = matchingMemos;
         }
         acc.push(curPost);
         return acc;
@@ -78,6 +91,119 @@ const util = {
     }
   },
 
+  transactionV2: async(query,data) => {
+    let conn = null;
+    let res = {}
+    try{
+      conn = await dbcPool.getConnection();
+      await conn.beginTransaction();
+    
+      const [result] = await conn.query(query, data)
+      await conn.commit();
+
+      res.ok = true;
+      res.result = result
+
+
+    } catch(err) {
+      logger.error('Query error', {message:err})
+      
+      if(conn){
+        await conn.rollback();
+      }
+
+      res.ok = false;
+      res.result = null;
+
+    } finally{
+      if(conn){
+        conn.release()
+      }
+    }
+    return res
+  },
+
+  transactionsV2: async (queries, data, isAsync = false) => {
+    let conn = null;
+    let res = {}
+
+    try {
+      conn = await dbcPool.getConnection();
+      await conn.beginTransaction();
+
+      let results;
+
+      if (isAsync) {
+        results = await Promise.all(
+          queries.map(async (query) => { 
+            let [res] = await conn.query(query,data)
+            return res;
+          })
+        );
+      } else {
+        results = [];
+        for (let qry of queries) {
+          let [result] = await conn.query(qry,data);
+          data[qry.name] = result;
+          results.push(result);
+        }
+      }
+
+      await conn.commit();
+      
+      res.ok = true;
+      res.result = results;
+    } catch (err) {
+
+      logger.error('Query Error',{message:err});
+
+      if (conn) {
+        await conn.rollback();
+      }
+
+      res.ok = false;
+      res.results = null;
+    } finally {
+      if(conn){
+        conn.release();
+      }
+    }
+    return res
+  },
+
+
+  transaction_Monitoring: async(query,data) => {
+    let conn = null;
+    let res = {}
+    try{
+      conn = await dbcPoolMonitoring.getConnection();
+      await conn.beginTransaction();
+    
+      const [result] = await conn.query(query, data)
+      await conn.commit();
+
+      res.ok = true;
+      res.result = result
+
+
+    } catch(err) {
+      logger.error('Query error', {message:err})
+      
+      if(conn){
+        await conn.rollback();
+      }
+
+      res.ok = false;
+      res.result = null;
+
+    } finally{
+      if(conn){
+        conn.release()
+      }
+    }
+    return res
+  },
+
   transaction: async (req, queries) => {
     let rt = {
       ok: false,  
@@ -93,21 +219,28 @@ const util = {
 
       const [result] = await conn.query(queries(data));
       await conn.commit();
-      conn.release();
+
       rt.ok = true;
       rt.msg = "request success";
       rt.statusCode = 200;
       rt.result = result;
+
     } catch (err) {
       logger.error('Transaction Error',{message:err});
       rt.msg = "Internal Server Error";
       rt.statusCode = 500;
       rt.result = err.message;
+
       if (conn) {
-        await conn.rollback();
+        await conn.rollbackTransaction();
+      }
+    }finally{
+      if(conn){
         conn.release();
       }
+
     }
+
     return rt;
   },
 
@@ -127,9 +260,12 @@ const util = {
 
       let results;
 
-      if (isAsync == true) {
+      if (isAsync) {
         results = await Promise.all(
-          queries.map((query) => conn.query(query(data)).then(([res]) => res))
+          queries.map(async (query) => { 
+            let [res] = await conn.query(query(data))
+            return res;
+          })
         );
       } else {
         results = [];
@@ -139,21 +275,28 @@ const util = {
           results.push(result);
         }
       }
+
       await conn.commit();
-      conn.release();
+      
       rt.ok = true;
       rt.msg = "request success";
       rt.statusCode = "200";
       rt.result = results;
     } catch (err) {
+
       logger.error('Transaction Error',{message:err});
       rt.msg = "Internal Server Error";
       rt.result = err.message;
+
       if (conn) {
         await conn.rollback();
+      }
+    } finally {
+      if(conn){
         conn.release();
       }
     }
+
     return rt;
   },
   //salt 생성하는 비동기 함수

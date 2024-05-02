@@ -347,8 +347,8 @@ const scheduleQuery = {
           AND CM.CM_ITM_CD = M.MTNG_PRGSS_CD
         WHERE 1 = 1
             AND MTNG_USE_TF = 1
-            AND (DATE_FORMAT(MTNG_STRT_DTM, '%Y-%m-%d') BETWEEN '${data.fromDate}' AND '${data.toDate}'     -- 시작일이 기간에 걸려있거나
-                OR DATE_FORMAT(MTNG_END_DTM, '%Y-%m-%d') BETWEEN '${data.fromDate}' AND '${data.toDate}')   -- 종료일이 기간에 걸려있거나
+            AND DATE_FORMAT(MTNG_STRT_DTM, '%Y-%m-%d') BETWEEN '${data.fromDate}' AND '${data.toDate}'     -- 시작일이 기간에 걸려있을 때
+                -- OR DATE_FORMAT(MTNG_END_DTM, '%Y-%m-%d') BETWEEN '${data.fromDate}' AND '${data.toDate}'   -- 미팅은 시작일=종료일이라 두번 쓰는게 필요없당..
         UNION ALL
         SELECT
             P.PRJ_REG_MBR_SEQ AS REG_MBR_SEQ,
@@ -373,8 +373,8 @@ const scheduleQuery = {
           AND CM.CM_ITM_CD = P.PRJ_PRGSS_CD
         WHERE 1 = 1
             AND PRJ_USE_TF = 1
-            AND (DATE_FORMAT(PRJ_STRT_DTM, '%Y-%m-%d') BETWEEN '${data.fromDate}' AND '${data.toDate}'
-                OR DATE_FORMAT(PRJ_END_DTM, '%Y-%m-%d') BETWEEN '${data.fromDate}' AND '${data.toDate}')
+            AND (DATE_FORMAT(PRJ_STRT_DTM, '%Y-%m-%d') <= '${data.toDate}'
+                AND DATE_FORMAT(PRJ_END_DTM, '%Y-%m-%d') >= '${data.fromDate}' )    -- 검색 시작,종료일에 걸쳐있는 진행중인 프로젝트 모두 나오게 조건 수정
       ) AS schd
       ORDER BY SCHD_STRT_DTM ASC;
       `

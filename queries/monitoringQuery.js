@@ -151,6 +151,67 @@ const monitoringQuery = {
 			AND ocmn.COMP_YN = '1' 
 			AND SND_STAT_TP = '3'
 		) D
+
+		UNION ALL
+		SELECT 
+			0 AS CNT_LVL_1
+			, 0 AS CNT_LVL_2
+			, IFNULL(SUM(SUB.CNT_LVL_3),0) AS CNT_LVL_3
+		FROM 
+		(
+			SELECT
+				SLOG.LOG_DTM
+				, NOTI.SUCC_CNT + NOTI.FAIL_CNT
+				, LEAST(3000, NOTI.REQ_CNT-10, 0.8*NOTI.REQ_CNT)
+				, IF(NOTI.SUCC_CNT + NOTI.FAIL_CNT < LEAST(3000, NOTI.REQ_CNT-10, 0.8*NOTI.REQ_CNT), 1, 0) AS CNT_LVL_3
+			FROM ridb.op_cm_mshp_noti_slot SLOT
+			INNER JOIN ridb.op_cm_mshp_noti_slot_log SLOG
+				ON SLOG.OP_MSHP_NOTI_NO = SLOT.OP_MSHP_NOTI_NO																					
+			INNER JOIN ridb.op_cm_mshp_noti NOTI
+				ON NOTI.OP_MSHP_NOTI_NO = SLOT.OP_MSHP_NOTI_NO
+			WHERE CAST(DATE_FORMAT(TIMEDIFF(NOW(), SLOG.LOG_DTM), '%i') AS INT) >= 10
+			GROUP BY NOTI.OP_MSHP_NOTI_NO
+		) SUB
+		
+		UNION ALL 
+		-- 3. SMS 업체발송지연
+		SELECT 
+			0 AS CNT_LVL_1
+			, 0 AS CNT_LVL_2
+			, SUM(SUB.CNT_LVL_3) AS CNT_LVL_3
+		FROM 
+		(
+			SELECT
+				MMI.SND_GRP_SEQ
+				, IF(COUNT(MMH.SEQ) < LEAST(0.8*(MMI.SND_TGET_CNT - MMI.APP_SND_SUSS_CNT), 2000), 1, 0) AS CNT_LVL_3
+			FROM stdb.mg_msgsndrslt_his MMH
+			INNER JOIN stdb.mg_msgsndgrp_info MMI
+				ON MMI.SND_GRP_SEQ = MMH.RSRV_COL_2
+				AND MMI.SND_STAT_TP IN ('4', '6')
+			WHERE 1=1
+				AND MMH.REQ_DTM >= DATE_FORMAT(NOW(), '%Y-%m-%d 00:00:00')
+				AND MMH.RSRV_COL_3 = '02'
+				AND CAST(DATE_FORMAT(TIMEDIFF(NOW(), STR_TO_DATE(MMI.MOD_DTM, '%Y-%m-%d %H:%i:%s')), '%H') AS INT) = 0
+				AND CAST(DATE_FORMAT(TIMEDIFF(NOW(), STR_TO_DATE(MMI.MOD_DTM, '%Y-%m-%d %H:%i:%s')), '%i') AS INT) >= 1
+			GROUP BY MMI.SND_GRP_SEQ
+			
+			UNION ALL
+			
+			SELECT
+				MMI.SND_GRP_SEQ
+				, IF(COUNT(MMH.SEQ) < LEAST(0.8*(MMI.SND_TGET_CNT - MMI.APP_SND_SUSS_CNT), 2000), 1, 0) AS CNT_LVL_3
+			FROM stdb01.mg_msgsndrslt_his MMH
+			INNER JOIN stdb01.mg_msgsndgrp_info MMI
+				ON MMI.SND_GRP_SEQ = MMH.RSRV_COL_2
+				AND MMI.SND_STAT_TP IN ('4', '6')
+			WHERE 1=1
+				AND MMH.REQ_DTM >= DATE_FORMAT(NOW(), '%Y-%m-%d 00:00:00')
+				AND MMH.RSRV_COL_3 = '06'
+				AND CAST(DATE_FORMAT(TIMEDIFF(NOW(), STR_TO_DATE(MMI.MOD_DTM, '%Y-%m-%d %H:%i:%s')), '%H') AS INT) = 0
+				AND CAST(DATE_FORMAT(TIMEDIFF(NOW(), STR_TO_DATE(MMI.MOD_DTM, '%Y-%m-%d %H:%i:%s')), '%i') AS INT) >= 1
+			GROUP BY MMI.SND_GRP_SEQ
+		) SUB
+		
 			
 	) A
 ;`;

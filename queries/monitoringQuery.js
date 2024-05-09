@@ -259,6 +259,125 @@ const monitoringQuery = {
         ) A`;
     return query;
   },
+  getTranInfoByDay: function(){
+
+
+  },
+  getTranInfoDetail: function(){
+    return `
+	SELECT 
+   stdbSUB.dt			AS stdbDate
+  ,stdbSUB.totalInput	AS stdbToTalInput
+  ,stdbSUB.maxInput		AS stdbMaxInput
+  ,stdbSUB.avgInput		AS stdbAvgInput
+  ,stdbSUB.totalOutput	AS stdbTotalInput
+  ,stdbSUB.maxOutput	AS stdbMaxOutput
+  ,stdbSUB.avgOutput	AS stdbAvgOutput
+  ,stdb01SUB.dt			AS stdb01Date
+  ,stdb01SUB.totalInput	AS stdb01TotalInput
+  ,stdb01SUB.maxInput	AS stdb01MaxInput
+  ,stdb01SUB.avgInput	AS stdb01AvgInput
+  ,stdb01SUB.totalOutput AS stdb01TotalOutput
+  ,stdb01SUB.maxOutput	AS	stdb01MaxOutput
+  ,stdb01SUB.avgOutput	As stdb01AvgOutput
+	from
+   (   -- stdb
+  SELECT 
+  sub1.dt
+  ,sub1.totalInput
+  ,sub1.maxInput
+  ,sub1.avgInput
+  ,sub2.totalOutput
+  ,sub2.maxOutput
+  ,sub2.avgOutput
+  FROM 
+  (SELECT 
+   SUBSTRING(sub.MK_DTM,12,2) AS dt
+  , sum(sub.cnt) AS totalInput
+  , max(sub.cnt) AS maxInput
+  , sum(sub.cnt)/3600 AS avgInput
+  from
+	  (SELECT
+		  mk_dtm
+		  ,COUNT(1) AS cnt
+	  FROM stdb.tr_postran_hdr tph
+	  WHERE tph.SAL_DT = DATE_FORMAT( ? ,'%Y%m%d')
+	  AND tph.MK_DTM LIKE concat(DATE_FORMAT( ? , '%Y-%m-%d'), ' %')
+	  GROUP BY tph.mK_DTM) 
+	  sub
+	  GROUP BY SUBSTRING(sub.MK_DTM,12,2)) sub1
+	 
+  INNER JOIN 
+	  (SELECT 
+   SUBSTRING(sub.BO_RCV_DTM,12,2) AS dt
+  , sum(sub.cnt) AS totalOutput
+  , max(sub.cnt) AS maxOutput
+  , sum(sub.cnt)/3600 AS avgOutput
+  from
+	  (SELECT
+		  BO_RCV_DTM
+		  ,COUNT(1) AS cnt
+	  FROM stdb.tr_postran_hdr tph
+	  WHERE tph.SAL_DT = DATE_FORMAT( ? ,'%Y%m%d')
+	  AND tph.BO_RCV_DTM LIKE concat(DATE_FORMAT( ? , '%Y-%m-%d'), ' %')
+	  GROUP BY tph.BO_RCV_DTM) 
+	  sub
+	  GROUP BY SUBSTRING(sub.BO_RCV_DTM,12,2)) sub2
+	  
+	  WHERE sub1.dt = sub2.dt ) stdbSUB
+	  
+	 INNER JOIN 
+	 
+	 (
+	 -- stdb01
+	 SELECT 
+  sub1.dt
+  ,sub1.totalInput
+  ,sub1.maxInput
+  ,sub1.avgInput
+  ,sub2.totalOutput
+  ,sub2.maxOutput
+  ,sub2.avgOutput
+  FROM 
+  (SELECT 
+   SUBSTRING(sub.MK_DTM,12,2) AS dt
+  , sum(sub.cnt) AS totalInput
+  , max(sub.cnt) AS maxInput
+  , sum(sub.cnt)/3600 AS avgInput
+  from
+	  (SELECT
+		  mk_dtm
+		  ,COUNT(1) AS cnt
+	  FROM stdb01.tr_postran_hdr tph
+	  WHERE tph.SAL_DT = DATE_FORMAT( ? ,'%Y%m%d')
+	  AND tph.MK_DTM LIKE concat(DATE_FORMAT( ? , '%Y-%m-%d'), ' %')
+	  GROUP BY tph.mK_DTM) 
+	  sub
+	  GROUP BY SUBSTRING(sub.MK_DTM,12,2)) sub1
+	 
+  INNER JOIN 
+	  (SELECT 
+   SUBSTRING(sub.BO_RCV_DTM,12,2) AS dt
+  , sum(sub.cnt) AS totalOutput
+  , max(sub.cnt) AS maxOutput
+  , sum(sub.cnt)/3600 AS avgOutput
+  from
+	  (SELECT
+		  BO_RCV_DTM
+		  ,COUNT(1) AS cnt
+	  FROM stdb01.tr_postran_hdr tph
+	  WHERE tph.SAL_DT = DATE_FORMAT( ? ,'%Y%m%d')
+	  AND tph.BO_RCV_DTM LIKE concat(DATE_FORMAT( ? , '%Y-%m-%d'), ' %')
+	  GROUP BY tph.BO_RCV_DTM) 
+	  sub
+	  GROUP BY SUBSTRING(sub.BO_RCV_DTM,12,2)) sub2
+	  
+	  WHERE sub1.dt = sub2.dt    
+	  ) stdb01SUB
+	  
+	  ON stdbSUB.dt = stdb01SUB.dt;` 
+
+  }
 };
 
 module.exports = monitoringQuery;

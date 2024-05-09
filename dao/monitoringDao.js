@@ -21,6 +21,10 @@ const dao = {
     getNaverInfo : (req) => {
         const query = monitoringQuery.getNaverInfo()
         return util.transaction_Monitoring(query,null)
+    },
+    getTranInfoDetail: (req) => {
+        const query = monitoringQuery.getTranInfoDetail();
+        return util.transaction_Monitoring(query,req)
     }
 }
 

@@ -267,10 +267,10 @@ const monitoringQuery = {
     return `
 	SELECT 
    stdbSUB.dt			AS stdbDate
-  ,stdbSUB.totalInput	AS stdbToTalInput
+  ,stdbSUB.totalInput	AS stdbTotalInput
   ,stdbSUB.maxInput		AS stdbMaxInput
   ,stdbSUB.avgInput		AS stdbAvgInput
-  ,stdbSUB.totalOutput	AS stdbTotalInput
+  ,stdbSUB.totalOutput	AS stdbTotalOutput
   ,stdbSUB.maxOutput	AS stdbMaxOutput
   ,stdbSUB.avgOutput	AS stdbAvgOutput
   ,stdb01SUB.dt			AS stdb01Date

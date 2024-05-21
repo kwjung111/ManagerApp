@@ -25,6 +25,14 @@ const dao = {
     getTranInfoDetail: (req) => {
         const query = monitoringQuery.getTranInfoDetail();
         return util.transaction_Monitoring(query,req)
+    },
+    getDailyAppSndInfoByDay : (req) => {
+        const query = monitoringQuery.getDailyAppSndInfoByDay();
+        return util.transaction_Monitoring(query,req)
+    },
+    getDailyAppSndInfoHeaderByDay : (req) => {
+        const query = monitoringQuery.getDailyAppSndInfoHeaderByDay();
+        return util.transaction_Monitoring(query,req)
     }
 }
 

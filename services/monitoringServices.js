@@ -6,10 +6,22 @@ const monitoringService = {
     
         const dateArr = [date,date,date,date,date,date,date,date]
         const ret = await monitoringDao.getTranInfoDetail(dateArr)
-        console.log("ret is :")
-        console.log(ret)
         return ret
-    }
+    },
+    getDailyAppSndInfoHeader : async(data) => {
+        const date = data.date
+
+        const dateArr = [date,date,date,date]
+        const ret = await monitoringDao.getDailyAppSndInfoHeaderByDay(dateArr)
+        return ret
+    },
+    getDailyAppSndInfo : async (data) => {
+        const date = data.date
+
+        const dateArr = [date,date,date,date]
+        const ret = await monitoringDao.getDailyAppSndInfoByDay(dateArr)
+        return ret
+    },
 }
 
 

@@ -37,6 +37,34 @@ router
     const tranInfoDetail = await monitoringService.getTranInfoDetail(data)
     res.send(tranInfoDetail)
 })
+.get('/appSndInfo/:date', async (req,res) => {
+    const data = util.parseReqBody(req)
+
+    const date = data?.date
+
+    const valid = isValidDateYYYYMMDD(date)
+    if(!valid){
+        res.send("날짜를 다시 확인해주세요")
+        return;
+    }
+
+    const appSndInfo = await monitoringService.getDailyAppSndInfo(data)
+    res.send(appSndInfo)
+})
+.get('/appSndInfoHeader/:date', async(req, res) => {
+    const data = util.parseReqBody(req)
+
+    const date = data?.date
+
+    const valid = isValidDateYYYYMMDD(date)
+    if(!valid){
+        res.send("날짜를 다시 확인해주세요")
+        return;
+    }
+
+    const appSndInfoHeader = await monitoringService.getDailyAppSndInfoHeader(data)
+    res.send(appSndInfoHeader)
+})
 
 
 //확인 필요

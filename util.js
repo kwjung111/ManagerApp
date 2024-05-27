@@ -341,7 +341,27 @@ const util = {
   }
 
   return true;
-}
+},
+getLastDays(startDateStr,daysAgo){
+  let year = parseInt(startDateStr.substring(0,4));
+  let month = parseInt(startDateStr.substring(4,6)) -1; // 0부터 시작
+  let day = parseInt(startDateStr.substring(6,8));
+  let startDate = new Date(year,month,day)
+
+  let dateArr = [];
+
+  for( let i = 0; i <= daysAgo;i++){
+    let curDate = new Date(startDate);
+    curDate.setDate(startDate.getDate() - i);
+
+    let formattedDate = curDate.getFullYear().toString() +
+                        ('0' + (curDate.getMonth() + 1)).slice(-2) +
+                        ('0' + curDate.getDate()).slice(-2);
+
+    dateArr.push(formattedDate);
+  }
+  return dateArr
+},
   
 
 };

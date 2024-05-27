@@ -484,8 +484,259 @@ WITH ROLLUP
 ) ROLL
 INNER JOIN RIDB.st_str_mst SSM
 ON SSM.STR_CD = ROLL.STR_CD;`
+  },
+  getDailyAppSndInfoByDateRange : function() {
+	return `SELECT
+	IFNULL(NOTI.REQ_DTM, '전체계') AS REQ_DTM
+	, CASE WEEKDAY(NOTI.REQ_DTM)
+		WHEN 0 THEN '월'
+		WHEN 1 THEN '화'
+		WHEN 2 THEN '수'
+		WHEN 3 THEN '목'
+		WHEN 4 THEN '금'
+		WHEN 5 THEN '토'
+		WHEN 6 THEN '일'
+	END AS DAY_NAME
+	, COUNT(*) AS STR_CNT
+	, SUM(NOTI.REQ_CNT) AS REQ_CNT
+	, SUM(NOTI.SUCC_CNT) AS SUCC_CNT
+	, SUM(NOTI.FAIL_CNT) AS FAIL_CNT
+	, LPAD(SUM(NOTI.SUCC_CNT) / (SUM(NOTI.SUCC_CNT)+SUM(NOTI.FAIL_CNT)) * 100,4) AS SUCC_RATE
+FROM
+(
+	SELECT
+		NOTI.STR_CD
+		, DATE_FORMAT(NOTI.REQ_DTM, '%Y-%m-%d') AS REQ_DTM
+		, SUM(IFNULL(NOTI.REQ_CNT,0)) AS REQ_CNT
+		, SUM(IFNULL(NOTI.SUCC_CNT,0)) AS SUCC_CNT
+		, SUM(IFNULL(NOTI.FAIL_CNT,0)) AS FAIL_CNT
+	FROM RIDB.op_cm_mshp_noti NOTI
+	WHERE NOTI.RESERV_DTM >= ? AND NOTI.RESERV_DTM < DATE_FORMAT(DATE_ADD(STR_TO_DATE( ? , '%Y%m%d'), INTERVAL 1 DAY), '%Y%m%d')
+		AND NOTI.STR_CD != 'RI0001'
+	GROUP BY NOTI.STR_CD, DATE_FORMAT(NOTI.REQ_DTM, '%Y-%m-%d')
+	UNION ALL
+	SELECT
+		NOTI.STR_CD
+		, DATE_FORMAT(NOTI.REQ_DTM, '%Y-%m-%d') AS REQ_DTM
+		, SUM(IFNULL(NOTI.REQ_CNT,0)) AS REQ_CNT
+		, SUM(IFNULL(NOTI.SUCC_CNT,0)) AS SUCC_CNT
+		, SUM(IFNULL(NOTI.FAIL_CNT,0)) AS FAIL_CNT
+	FROM RIDB.op_cm_mshp_noti_backup NOTI
+	WHERE NOTI.RESERV_DTM >= ? AND NOTI.RESERV_DTM < DATE_FORMAT(DATE_ADD(STR_TO_DATE( ? , '%Y%m%d'), INTERVAL 1 DAY), '%Y%m%d')
+		AND NOTI.STR_CD != 'RI0001'
+	GROUP BY NOTI.STR_CD, DATE_FORMAT(NOTI.REQ_DTM, '%Y-%m-%d')
+) NOTI
+GROUP BY NOTI.REQ_DTM
+WITH ROLLUP ;`
+  },
+  getDailyTranInfoByDaySTDB : function(){
+	return `
+	SELECT 
+"STDB" AS db 
+,? AS date
+,DATE_FORMAT(STR_TO_DATE( ? , '%Y%m%d'), '%W') AS dayOfWeek
+,SUM(SUB1.storeCnt)   AS storeCnt
+,SUM(SUB1.totalCnt)   AS totalCnt
+,SUM(SUB1.totalIn)    AS totalIn
+,SUM(SUB1.maxIn)      AS maxIn
+,SUM(SUB1.avgIn)      AS avgIn
+,SUM(SUB1.totalOut)   AS totalOut
+,SUM(SUB1.maxOut)     AS maxOut
+,SUM(SUB1.avgOut)     AS avgOut
+FROM 
+(
+WITH CTE_inputHourly AS (
+	SELECT 
+	count(1) AS inputCnt
+	,HOUR(BO_RCV_DTM) AS inputHr
+	FROM stdb.tr_postran_hdr tph
+	WHERE tph.SAL_DT  = ?
+	GROUP BY HOUR(BO_RCV_DTM)
+),
+CTE_storeCnt AS(
+	SELECT 
+	sum(cnt) AS totalCnt
+	,count(cnt) AS storeCnt
+		FROM (SELECT 
+		count(1) AS cnt
+		FROM stdb.tr_postran_hdr tph
+		WHERE tph.SAL_DT = ?
+		GROUP BY tph.str_cd
+	) tmp
+),
+CTE_maxInputHour AS (
+	SELECT
+	sum(inputCnt) AS totalInputCnt
+	,inputCnt AS maxInputCnt
+	,inputHr AS maxInputHr
+	FROM CTE_inputHourly
+	ORDER BY inputCnt DESC
+	LIMIT 1
+),
+CTE_filteredInput AS (
+    select 
+    count(1) AS cnt 
+    FROM stdb.tr_postran_hdr tph
+    INNER JOIN CTE_maxInputHour c
+    ON HOUR(tph.BO_RCV_DTM) = c.maxInputHr
+    WHERE tph.SAL_DT = ?
+    GROUP BY tph.BO_RCV_DTM
+),
+CTE_filteredOutput AS (
+	SELECT 
+	count(1) AS cnt
+	FROM stdb.tr_postran_hdr tph
+	INNER JOIN CTE_maxInputHour c
+	ON HOUR(tph.MK_DTM) = c.maxInputHr
+	WHERE tph.SAL_DT = ?
+	GROUP BY tph.MK_DTM
+)
+SELECT 
+storeCnt AS storeCnt
+,totalCnt AS totalCnt -- totalInputCnt AS totalCnt
+,0 AS totalIn
+,0 AS maxIn
+,0 AS avgIn
+, 0 AS totalOut
+, 0 AS maxOut
+, 0 AS avgOut
+FROM CTE_storeCnt
+
+UNION ALL 
+
+SELECT
+0 AS storeCnt
+,0 AS totalCnt
+,sum(cte.cnt) AS totalIn
+,max(cte.cnt) AS maxIn
+,sum(cte.cnt)/3600 AS avgIn
+, 0 AS totalOut
+, 0 AS maxOut
+, 0 AS avgOut
+FROM 
+CTE_filteredInput cte
+
+UNION ALL 
+
+SELECT 
+0 AS storeCnt
+,0 AS totalCnt
+,0 AS totalIn
+, 0 AS maxIn
+, 0 AS avgIn
+, sum(cte.cnt) AS totalOut
+, max(cte.cnt) AS maxOut
+, sum(cte.cnt)/3600 AS avgOut
+FROM 
+CTE_filteredOutput cte
+
+) SUB1;
+`
+  },
+  getDailyTranInfoByDaySTDB01 : function(){
+	return `
+	SELECT 
+	"STDB01" AS DB
+, ? AS date
+,DATE_FORMAT(STR_TO_DATE( ? , '%Y%m%d'), '%W') AS dayOfWeek
+,SUM(SUB1.storeCnt)  AS storeCnt
+,SUM(SUB1.totalCnt)   AS totalCnt
+,SUM(SUB1.totalIn)    AS totalIn
+,SUM(SUB1.maxIn)      AS maxIn
+,SUM(SUB1.avgIn)      AS avgIn
+,SUM(SUB1.totalOut)   AS totalOut
+,SUM(SUB1.maxOut)     AS maxOut
+,SUM(SUB1.avgOut)     AS avgOut
+FROM 
+(
+WITH CTE_inputHourly AS (
+	SELECT 
+	count(1) AS inputCnt
+	,HOUR(BO_RCV_DTM) AS inputHr
+	FROM stdb01.tr_postran_hdr tph
+	WHERE tph.SAL_DT  = ?
+	GROUP BY HOUR(BO_RCV_DTM)
+),
+CTE_storeCnt AS(
+	SELECT 
+	sum(cnt) AS totalCnt
+	,count(cnt) AS storeCnt
+		FROM (SELECT 
+		count(1) AS cnt
+		FROM stdb01.tr_postran_hdr tph
+		WHERE tph.SAL_DT = ?
+		GROUP BY tph.str_cd
+	) tmp
+),
+CTE_maxInputHour AS (
+	SELECT
+	sum(inputCnt) AS totalInputCnt
+	,inputCnt AS maxInputCnt
+	,inputHr AS maxInputHr
+	FROM CTE_inputHourly
+	ORDER BY inputCnt DESC
+	LIMIT 1
+),
+CTE_filteredInput AS (
+    select 
+    count(1) AS cnt 
+    FROM stdb01.tr_postran_hdr tph
+    INNER JOIN CTE_maxInputHour c
+    ON HOUR(tph.BO_RCV_DTM) = c.maxInputHr
+    WHERE tph.SAL_DT = ?
+    GROUP BY tph.BO_RCV_DTM
+),
+CTE_filteredOutput AS (
+	SELECT 
+	count(1) AS cnt
+	FROM stdb01.tr_postran_hdr tph
+	INNER JOIN CTE_maxInputHour c
+	ON HOUR(tph.MK_DTM) = c.maxInputHr
+	WHERE tph.SAL_DT = ?
+	GROUP BY tph.MK_DTM
+)
+SELECT 
+storeCnt AS storeCnt
+,totalCnt AS totalCnt -- totalInputCnt AS totalCnt
+,0 AS totalIn
+,0 AS maxIn
+,0 AS avgIn
+, 0 AS totalOut
+, 0 AS maxOut
+, 0 AS avgOut
+FROM CTE_storeCnt
+
+UNION ALL 
+
+SELECT
+0 AS storeCnt
+,0 AS totalCnt
+,sum(cte.cnt) AS totalIn
+,max(cte.cnt) AS maxIn
+,sum(cte.cnt)/3600 AS avgIn
+, 0 AS totalOut
+, 0 AS maxOut
+, 0 AS avgOut
+FROM 
+CTE_filteredInput cte
+
+UNION ALL 
+
+SELECT 
+0 AS storeCnt
+,0 AS totalCnt
+,0 AS totalIn
+, 0 AS maxIn
+, 0 AS avgIn
+, sum(cte.cnt) AS totalOut
+, max(cte.cnt) AS maxOut
+, sum(cte.cnt)/3600 AS avgOut
+FROM 
+CTE_filteredOutput cte
+
+) SUB1;
+`
   }
-  
 
 };
 

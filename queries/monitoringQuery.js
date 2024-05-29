@@ -220,9 +220,10 @@ const monitoringQuery = {
   getNaverInfo: function (data) {
     const query = `
         select
-        (SELECT COUNT(1) 
-        FROM RIDB.NAVER_ORDERS
-        WHERE DATE(ORDER_DATE) = CURDATE()
+        (SELECT COUNT(1) FROM RIDB.OP_POSTRAN_HDR
+		WHERE SAL_DT = DATE_FORMAT(NOW(),'%Y%m%d')
+		AND COOP_SORD_NO > ''
+		AND SORD_TRAN_STAT_TP >= '530'
         ) AS today,
         (SELECT COUNT(1)
         FROM RIDB.NAVER_ORDERS) AS total;

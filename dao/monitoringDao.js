@@ -36,6 +36,10 @@ const dao = {
         const query = monitoringQuery.getDailyAppSndInfoHeaderByDay();
         return util.transaction_Monitoring(query,data)
     },
+    getDailyAppSndInfoByStrCd : (data) => {
+        const query = monitoringQuery.getDailyAppSndInfoByStrCd();
+        return util.transaction_Monitoring(query,data)
+    },
     getDailyTranInfoByDaySTDB : (data) => {
         const query = monitoringQuery.getDailyTranInfoByDaySTDB();
         return util.transaction_Monitoring(query,data)

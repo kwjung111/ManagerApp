@@ -37,6 +37,19 @@ router
     const tranInfoDetail = await monitoringService.getTranInfoDetail(data)
     res.send(tranInfoDetail)
 })
+.get('/tranInfo', async(req,res) => {
+    const data = util.parseReqBody(req)
+    const startDate = data.startDate
+    const endDate = data.endDate
+    
+    if( !isValidDateYYYYMMDD(startDate) || !isValidDateYYYYMMDD(endDate )){
+        res.send("날짜를 다시 확인 해주세요.")
+        return;
+    }
+
+    const tranInfoDailySummary = await monitoringService.getDailyTranInfo(startDate,endDate)
+    res.send(tranInfoDailySummary)
+})
 .get('/appSndInfo', async(req,res) => {
     const data = util.parseReqBody(req)
     const startDate = data.startDate
@@ -92,7 +105,6 @@ router
     const tranInfoDaily = await monitoringService.getDailyTranInfo(data)
     res.send(tranInfoDaily)
 })
-
 
 //확인 필요
 function isValidDateYYYYMMDD(date) {

@@ -9,6 +9,11 @@ const monitoringService = {
         const ret = await monitoringDao.getTranInfoDetail(dateArr)
         return ret
     },
+    getDailyTranInfo : async (start,end) => {
+        const dateRange = [start,end]
+        const ret = await monitoringDao.getDailyTranInfoByDateRange(dateRange)
+        return ret
+    },
     getDailyAppSndInfoHeader : async(data) => {
         const date = data.date
 
@@ -24,35 +29,10 @@ const monitoringService = {
         return ret
     },
     getDailyAppSndInfoByDateRange : async(start,end) => {
-        const dateArr = [start,end,start,end]
-        const ret = await monitoringDao.getDailyAppSndInfoByDateRange(dateArr)
+        const dateRange = [start,end,start,end]
+        const ret = await monitoringDao.getDailyAppSndInfoByDateRange(dateRange)
         return ret
     },
-    // 병렬 처리
-    getDailyTranInfo : async (data) => {
-        const date = data.date
-
-        const dateArr = util.getLastDays(date,3)
-        const promiseArr = []
-        const ret = []
-
-        for(targetDate of dateArr){
-            const dtArr = [targetDate,targetDate,targetDate,targetDate,targetDate,targetDate]
-            promiseArr.push(monitoringDao.getDailyTranInfoByDaySTDB(dtArr)) 
-            promiseArr.push(monitoringDao.getDailyTranInfoByDaySTDB01(dtArr))
-        }
-
-        const queryResArr = await Promise.all(promiseArr)
-
-        for (let i = 0 ; i < queryResArr.length; i++){
-            const queryRes = queryResArr[i]
-
-            const val = queryRes.result[0];
-            ret.push(val);
-        }
-
-        return ret
-    }
 }
 
 

@@ -33,6 +33,11 @@ const monitoringService = {
         const ret = await monitoringDao.getDailyAppSndInfoByDateRange(dateRange)
         return ret
     },
+    getDailyAppSndInfoByStrCd : async(num) => {
+        const numArr = [num, num]
+        const ret = await monitoringDao.getDailyAppSndInfoByStrCd(numArr)
+        return ret
+    },
 }
 
 

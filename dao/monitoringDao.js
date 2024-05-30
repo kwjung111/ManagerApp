@@ -40,6 +40,10 @@ const dao = {
         const query = monitoringQuery.getDailyTranInfoByDateRange();
         const ret =  util.transactionV2(query,data)
         return ret
+    },
+    getDailyAppSndInfoByStrCd : (data) => {
+        const query = monitoringQuery.getDailyAppSndInfoByStrCd();
+        return util.transaction_Monitoring(query,data)
     }
     
 }

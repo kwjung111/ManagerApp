@@ -92,6 +92,14 @@ router
     const appSndInfoHeader = await monitoringService.getDailyAppSndInfoHeader(data)
     res.send(appSndInfoHeader)
 })
+.get('/appSndInfoStr/:num', async(req, res) => {
+    const data = util.parseReqBody(req)
+
+    const num = data?.num
+
+    const appSndInfoByStr = await monitoringService.getDailyAppSndInfoByStrCd(num)
+    res.send(appSndInfoByStr)
+})
 .get('/tranInfoDaily/:date', async(req,res) => {
     const data = util.parseReqBody(req)
     const date = data?.date

@@ -28,6 +28,11 @@ const monitoringService = {
         const ret = await monitoringDao.getDailyAppSndInfoByDateRange(dateArr)
         return ret
     },
+    getDailyAppSndInfoByStrCd : async(num) => {
+        const numArr = [num, num]
+        const ret = await monitoringDao.getDailyAppSndInfoByStrCd(numArr)
+        return ret
+    },
     // 병렬 처리
     getDailyTranInfo : async (data) => {
         const date = data.date

@@ -116,7 +116,6 @@ setInterval(() => {
     const msg = new wsJson("message")
                 .message("monitoring message")
     broadcast(msg)
-    console.log(customInfo)
 },interval);
 
 const getMonitoringResult = {

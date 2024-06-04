@@ -9,6 +9,8 @@ require("dotenv").config();
 const env = process.env.NODE_ENV;
 const http = require("http");
 const { initWss } = require("./wss.js");
+const redisClient = require('./redis.js')
+
 
 const path = require("path");
 const app = express();
@@ -29,6 +31,7 @@ if (env == "DEV") {
 }
 
 const port = process.env.PORT || 3000;
+
 
 //router
 const postsRouter = require("./routes/posts.js");
@@ -93,9 +96,8 @@ app.use("/projects", projectsRouter);
 app.use("/schedule", scheduleRouter);
 app.use("/mbr", mbrRouter);
 
-
-
-const job = require("./job.js");
+//init redis Client
+redisClient();
 
 //TODO uuid -> jwt 기반으로 리팩토링하기
 app.get('/identifier',(req,res)=>{
@@ -128,4 +130,6 @@ function verifyToken(req, res, next) {
     });
   }
 }
+
+
 

@@ -155,12 +155,12 @@ const util = {
       res.result = results;
     } catch (err) {
 
-      logger.error('Query Error',{message:err});
+      logger.error(`Transaction Error : ${err}`);
 
       if (conn) {
         await conn.rollback();
+        logger.info('transaction rollbacked')
       }
-
       res.ok = false;
       res.results = null;
     } finally {
@@ -187,7 +187,7 @@ const util = {
 
 
     } catch(err) {
-      logger.error('Query error', {message:err})
+      logger.error(`Transaction Error : ${err}`);
       
       if(conn){
         await conn.rollback();
@@ -226,13 +226,14 @@ const util = {
       rt.result = result;
 
     } catch (err) {
-      logger.error('Transaction Error',{message:err});
+      logger.error(`Transaction Error : ${err}`);
       rt.msg = "Internal Server Error";
       rt.statusCode = 500;
       rt.result = err.message;
 
       if (conn) {
-        await conn.rollbackTransaction();
+        await conn.rollback();
+        logger.info('transaction rollbacked')
       }
     }finally{
       if(conn){
@@ -284,12 +285,13 @@ const util = {
       rt.result = results;
     } catch (err) {
 
-      logger.error('Transaction Error',{message:err});
+      logger.error(`Transaction Error : ${err}`);
       rt.msg = "Internal Server Error";
       rt.result = err.message;
 
       if (conn) {
         await conn.rollback();
+        logger.info('transaction rollbacked')
       }
     } finally {
       if(conn){

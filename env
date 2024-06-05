@@ -1,5 +1,0 @@
-DB_HOST = '15.164.4.54'
-DB_PORT = '33061'
-DB_USER = 'root'
-DB_PASS = '1234'
-DB_DB   = 'Dev'

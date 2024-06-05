@@ -1,6 +1,7 @@
 const redis = require('redis')
 const logger = require('./logger.js')
 const util = require('./util.js')
+const {wsJson,broadcast} = require('./wss.js')
 
 const channel = 'Monitoring';
 
@@ -22,10 +23,13 @@ async function initClient(){
 
 const monitoringListener = (message, _ ) => {
     logger.info(`monitoring message : ${message}`)
+
+    //parse message
+
     const msg = new wsJson("message")
     .message("monitoring message")
     
-    broadCast(msg)
+    broadcast(msg)
     logger.info(msg)
 }
 

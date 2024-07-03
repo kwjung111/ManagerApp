@@ -24,6 +24,9 @@ let naverInfo = {
     today : 0,
     total : 0
 }
+let lagInfo = {
+    lag : 0,
+}
 
 
 let customInfo = {}
@@ -90,15 +93,17 @@ const getCustomInfo = async () => {
     const mqInfoPromise = monitoringDao.getMQInfo()
     const tmsInfoPromise = monitoringDao.getTmsInfo()
     const naverInfoPromise = monitoringDao.getNaverInfo()
+    const slaveInfoPromise = monitoringDao.getSlaveStatus()
 
-    const promises = [mqInfoPromise,tmsInfoPromise,naverInfoPromise]
+    const promises = [mqInfoPromise,tmsInfoPromise,naverInfoPromise,slaveInfoPromise]
     
-    const [mqData, tmsData,naverData ] = await Promise.all(promises)
+    const [mqData, tmsData,naverData,slaveData ] = await Promise.all(promises)
 
     customInfo = {
         mqInfo     :  { stdb: mqData.result[0].stdb, stdb01: mqData.result[0].stdb01 },
         tmsInfo    :  { lv1 : tmsData.result[0].CNT_LVL_1, lv2 : tmsData.result[0].CNT_LVL_2, lv3 : tmsData.result[0].CNT_LVL_3 },
         naverInfo  :  { today: naverData.result[0].today, total: naverData.result[0].total },
+        lagInfo     : { lag : slaveData.result[0].Seconds_Behind_Master}
     }
 }
 

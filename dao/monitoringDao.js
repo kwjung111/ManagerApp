@@ -44,8 +44,11 @@ const dao = {
     getDailyAppSndInfoByStrCd : (data) => {
         const query = monitoringQuery.getDailyAppSndInfoByStrCd();
         return util.transaction_Monitoring(query,data)
-    }
-    
+    },
+    getSlaveStatus : (data) => {
+        const query = monitoringQuery.getSlaveStatus();
+        return util.transaction_Monitoring(query,data)
+    },
 }
 
 module.exports = dao

@@ -38,6 +38,10 @@ const monitoringService = {
         const ret = await monitoringDao.getDailyAppSndInfoByStrCd(numArr)
         return ret
     },
+    getSlaveStatus: async() => {
+        const ret = await monitoringDao.getSlaveStatus()
+        return ret
+    }
 }
 
 

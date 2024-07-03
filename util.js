@@ -190,7 +190,12 @@ const util = {
       logger.error(`Transaction Error : ${err}`);
       
       if(conn){
+        try{
         await conn.rollback();
+        }
+        catch(rollbackErr){
+          logger.error(`Rollback error : ${rollbackErr}`)
+        }
       }
 
       res.ok = false;
@@ -198,7 +203,7 @@ const util = {
 
     } finally{
       if(conn){
-        conn.release()
+        conn.release();
       }
     }
     return res

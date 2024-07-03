@@ -2,7 +2,6 @@ const express = require("express")
 const router = express.Router();
 const util = require("../util.js")
 const job = require("../job.js")
-const monitoringDao = require('../dao/monitoringDao.js');
 const monitoringService = require("../services/monitoringServices.js");
 
 

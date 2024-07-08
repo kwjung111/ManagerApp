@@ -192,7 +192,7 @@ const monitoringQuery = {
 				AND MMH.REQ_DTM >= DATE_FORMAT(NOW(), '%Y-%m-%d 00:00:00')
 				AND MMH.RSRV_COL_3 = '02'
 				AND CAST(DATE_FORMAT(TIMEDIFF(NOW(), STR_TO_DATE(MMI.MOD_DTM, '%Y-%m-%d %H:%i:%s')), '%H') AS INT) = 0
-				AND CAST(DATE_FORMAT(TIMEDIFF(NOW(), STR_TO_DATE(MMI.MOD_DTM, '%Y-%m-%d %H:%i:%s')), '%i') AS INT) >= 5
+				AND CAST(DATE_FORMAT(TIMEDIFF(NOW(), STR_TO_DATE(MMI.MOD_DTM, '%Y-%m-%d %H:%i:%s')), '%i') AS INT) >= 10
 			GROUP BY MMI.SND_GRP_SEQ
 			
 			UNION ALL
@@ -208,7 +208,7 @@ const monitoringQuery = {
 				AND MMH.REQ_DTM >= DATE_FORMAT(NOW(), '%Y-%m-%d 00:00:00')
 				AND MMH.RSRV_COL_3 = '06'
 				AND CAST(DATE_FORMAT(TIMEDIFF(NOW(), STR_TO_DATE(MMI.MOD_DTM, '%Y-%m-%d %H:%i:%s')), '%H') AS INT) = 0
-				AND CAST(DATE_FORMAT(TIMEDIFF(NOW(), STR_TO_DATE(MMI.MOD_DTM, '%Y-%m-%d %H:%i:%s')), '%i') AS INT) >= 5
+				AND CAST(DATE_FORMAT(TIMEDIFF(NOW(), STR_TO_DATE(MMI.MOD_DTM, '%Y-%m-%d %H:%i:%s')), '%i') AS INT) >= 10
 			GROUP BY MMI.SND_GRP_SEQ
 		) SUB
 		

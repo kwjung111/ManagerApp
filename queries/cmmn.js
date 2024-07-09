@@ -14,6 +14,20 @@ const cmmnQuery = {
     AND CCG.USE_TF = TRUE 
     ORDER BY CCI.SORT_ORDR ; `
   },
+
+  getNasInfo: function (data) {
+    const query = `
+    SELECT CLSS, TITLE, SUMMARY, KEYWORDS, FILE_PATH 
+    FROM NAS.NAS_DOC
+    WHERE KEYWORDS LIKE ? ;
+    `
+    // const query = `
+    // SELECT CLSS, TITLE, SUMMARY, KEYWORDS, FILE_PATH
+    // FROM tmp.nas_doc
+    // WHERE KEYWORDS LIKE ? ;
+    // `
+    return query;
+  }
 };
 
 module.exports = cmmnQuery;

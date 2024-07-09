@@ -13,5 +13,12 @@ router
         res.send(ret)
     ])
 })
+.get('/nas/:text', (req, res) => {
+    const data = util.parseReqBody(req)
+    cmmnService.getNasInfo(data)
+    .then((ret) => {
+        res.send(ret)
+    })
+})
 
 module.exports = router;

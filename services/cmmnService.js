@@ -5,6 +5,10 @@ const cmmnService = {
     getCmCd : async (data) => {
         const ret = await cmmnDao.getCmCd(data)
         return ret
+    },
+    getNasInfo : async (data) => {
+        const ret = await cmmnDao.getNasInfo(data)
+        return ret
     }
 }
 

@@ -9,7 +9,7 @@ const monitoringQuery = {
         FROM stdb.tr_postran_hdr tph 
         WHERE 
         tph.SAL_DT = DATE_FORMAT(NOW(), '%Y%m%d')
-        AND tph.BO_RCV_DTM >= DATE_FORMAT(now() - INTERVAL 30 SECOND, '%Y-%m-%d %H:%i:%s'))
+        AND tph.BO_RCV_DTM >= DATE_FORMAT(now() - INTERVAL 15 SECOND, '%Y-%m-%d %H:%i:%s'))
         AS stdb,
         
         (SELECT 
@@ -17,7 +17,7 @@ const monitoringQuery = {
         FROM stdb01.tr_postran_hdr tph2 
         WHERE 
         tph2.SAL_DT = DATE_FORMAT(NOW(), '%Y%m%d')
-        AND tph2.BO_RCV_DTM >= DATE_FORMAT(now() - INTERVAL 30 SECOND, '%Y-%m-%d %H:%i:%s'))
+        AND tph2.BO_RCV_DTM >= DATE_FORMAT(now() - INTERVAL 15 SECOND, '%Y-%m-%d %H:%i:%s'))
         AS stdb01;`;
     return query;
   },
@@ -226,7 +226,10 @@ const monitoringQuery = {
 		AND SORD_TRAN_STAT_TP >= '530'
         ) AS today,
         (SELECT COUNT(1)
-        FROM RIDB.NAVER_ORDERS) AS total;
+        FROM RIDB.NAVER_ORDERS
+		WHERE ORDER_DATE < date(now())
+        AND ORDER_DATE >= date(date_sub(now() , INTERVAL 7 day))
+		) AS total;
         `;
     return query;
   },

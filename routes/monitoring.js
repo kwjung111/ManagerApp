@@ -1,24 +1,24 @@
 const express = require("express")
 const router = express.Router();
 const util = require("../util.js")
-const job = require("../job.js")
+const cache = require("../monitoringCache.js")
 const monitoringService = require("../services/monitoringServices.js");
 
 
 router
 .get('/MQInfo',async (req,res) => {
-    let mqInfo = await job.getMQInfo()
+    let mqInfo = await cache.getMQInfo()
     res.send(mqInfo)
 })
 .get('/TmsInfo',async (req,res) => {
-    let tmsInfo = await job.getTmsInfo()
+    let tmsInfo = await cache.getTmsInfo()
     res.send(tmsInfo)
 })
 .get('/NaverInfo',async (req,res) => [
-    //let naverInfo = job.
+    //let naverInfo = cache.
 ])
 .get('/customInfo', async (req, res) => {
-    let customInfo = await job.getCustomInfo()
+    let customInfo = await cache.getCustomInfo()
     res.send(customInfo)
 })
 .get('/tranInfoDetail/:date', async (req, res) => {

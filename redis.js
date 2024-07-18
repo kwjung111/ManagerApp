@@ -1,8 +1,8 @@
 const redis = require('redis')
 const logger = require('./logger.js')
 const {wsJson,broadcast} = require('./wss.js');
-const RedisMessageDTO = require('/usr/src/platform-server/dto/redisMessageDTO.js');
-const MQResponseDTO = require('/usr/src/platform-server/dto/MQResponseDTO.js');
+const RedisMessageDTO = require('./dto/RedisMessageDTO.js');
+const MQResponseDTO = require('./dto/MQResponseDTO.js');
 const cache = require('./monitoringCache.js')
 
 const channel = 'srList';

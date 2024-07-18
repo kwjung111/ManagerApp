@@ -3,29 +3,31 @@ const monitoringDao = require('./dao/monitoringDao.js')
 const logger = require('./logger.js')
 const {wsJson,broadcast} = require('./wss.js')
 
-const interval = 15000;
-
 let mqInfo = {
-    stdb : 0,
-    stdb01 : 0
+    stdb : -1,
+    stdb01 : -1
 }
 let tmsInfo = {
-    lv1 : 0,
-    lv2 : 0,
-    lv3 : 0
+    lv1 : -1,
+    lv2 : -1,
+    lv3 : -1
 }
 let appSndInfo = {
-    tot_cnt : 0,
-    comp_cnt : 0,
-    alarm_yn : 0,
-    comp_rt : 0
+    tot_cnt : -1,
+    comp_cnt : -1,
+    alarm_yn : -1,
+    comp_rt : -1
 }
 let naverInfo = {
-    today : 0,
-    total : 0
+    today : -1,
+    total : -1
 }
 let lagInfo = {
-    lag : 0,
+    lag : -1,
+}
+let mqWebInfo = {
+    connections : -1,
+    queues : -1,
 }
 
 
@@ -88,7 +90,7 @@ const getAppSndInfo = () => {
     })
 }
 
-const getCustomInfo = async () => {
+const refreshCustomInfo = async () => {
     
     const mqInfoPromise = monitoringDao.getMQInfo()
     const tmsInfoPromise = monitoringDao.getTmsInfo()
@@ -103,27 +105,21 @@ const getCustomInfo = async () => {
         mqInfo     :  { stdb: mqData.result[0].stdb, stdb01: mqData.result[0].stdb01 },
         tmsInfo    :  { lv1 : tmsData.result[0].CNT_LVL_1, lv2 : tmsData.result[0].CNT_LVL_2, lv3 : tmsData.result[0].CNT_LVL_3 },
         naverInfo  :  { today: naverData.result[0].today, total: naverData.result[0].total },
-        lagInfo     : { lag : slaveData.result[0].Seconds_Behind_Master}
+        lagInfo     : { lag : slaveData.result[0].Seconds_Behind_Master},
+        mqWebInfo   : mqWebInfo
     }
 }
 
-
-const initailizeMonitoring = () => {
-    getCustomInfo.then()
-}
-
-
 //initialize
-getCustomInfo();
+refreshCustomInfo();
 
-setInterval(() => {
-    getCustomInfo();
+const broadCastToFront = async () => {
     const msg = new wsJson("message")
                 .message("monitoring message")
     broadcast(msg)
-},interval);
+}
 
-const getMonitoringResult = {
+const monitoringCache = {
     getMQInfo : function(){
         return mqInfo
     },
@@ -138,7 +134,17 @@ const getMonitoringResult = {
     },
     getCustomInfo : function() {
         return customInfo
+    },
+    setMqWebInfo : function(data) {
+        mqWebInfo = data
+    },
+    //refersh all Cache
+    refresh : function(){
+        return refreshCustomInfo();
+    },
+    broadcast : function(){
+        broadCastToFront();
     }
 }
 
-module.exports = getMonitoringResult;
+module.exports = monitoringCache;

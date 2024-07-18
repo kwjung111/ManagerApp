@@ -1,7 +1,7 @@
 const redis = require('redis')
 const logger = require('./logger.js')
 const {wsJson,broadcast} = require('./wss.js');
-const RedisMessageDTO = require('./dto/redisMessageDTO.js');
+const RedisMessageDTO = require('./dto/RedisMessageDTO.js');
 const MQResponseDTO = require('./dto/MQResponseDTO.js');
 const cache = require('./monitoringCache.js')
 

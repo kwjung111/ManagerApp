@@ -9,9 +9,24 @@ const dao = {
         return util.transactionV2(query,sqlData)
     },
     getNasInfo : (data) => {
-        const queryData = [data.text]
+        const srchTp = data.srchTp
+        let queryData;
+
+        if(srchTp == '0') {
+            queryData = ['%'+data.text+'%', '%'+data.text+'%', '%'+data.text+'%']
+        }
+        else if(srchTp == '1'){
+            queryData = ['%'+data.text+'%', null, null]
+        }
+        else if(srchTp == '2'){
+            queryData = [null, '%'+data.text+'%', null]
+        }
+        else if(srchTp == '3'){
+            queryData = [null, null, '%'+data.text+'%']
+        }
+
         const query = cmmnQuery.getNasInfo()
-        return util.transactionV2(query, '%'+queryData+'%')
+        return util.transactionV2(query, queryData)
     }
 }
 

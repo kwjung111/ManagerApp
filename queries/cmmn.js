@@ -19,7 +19,9 @@ const cmmnQuery = {
     const query = `
     SELECT CLSS, TITLE, SUMMARY, KEYWORDS, FILE_PATH 
     FROM NAS.NAS_DOC
-    WHERE KEYWORDS LIKE ? ;
+    WHERE KEYWORDS LIKE ? 
+    OR FILE_NAME LIKE ?
+    OR SUMMARY LIKE ? ;
     `
     // const query = `
     // SELECT CLSS, TITLE, SUMMARY, KEYWORDS, FILE_PATH

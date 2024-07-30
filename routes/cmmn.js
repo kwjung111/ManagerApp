@@ -13,7 +13,7 @@ router
         res.send(ret)
     ])
 })
-.get('/nas/:text', (req, res) => {
+.get('/nas/:text/:srchTp', (req, res) => {
     const data = util.parseReqBody(req)
     cmmnService.getNasInfo(data)
     .then((ret) => {
